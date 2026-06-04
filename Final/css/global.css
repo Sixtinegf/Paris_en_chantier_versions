@@ -1,0 +1,19 @@
+/* =========================
+   GLOBAL RESET
+========================= */
+
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: white;
+  font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+}
+
+/* Canvas p5.js */
+canvas {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}

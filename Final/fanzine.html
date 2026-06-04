@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+<meta charset="utf-8">
+
+<meta name="viewport"
+content="width=device-width,initial-scale=1.0">
+
+<title>Fanzine - Paris Chantiers</title>
+
+<link rel="stylesheet" href="css/fanzine.css">
+
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+<!-- Export PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<!-- Ton JS -->
+<script src="js/fanzine.js" defer></script>
+
+</head>
+
+<body>
+
+  <h1 class="zine-title">Fanzine en chantier</h1>
+
+<div class="nav-home">
+  <button onclick="window.location.href='index.html'">
+    ← Retour accueil
+  </button>
+</div>
+
+<button onclick="generateFanzine()">
+Générer un fanzine
+</button>
+
+<button onclick="exportPDF()">
+EXPORT FANZINE
+</button>
+
+<button onclick="window.location.href='bibliotheque.html'">
+BIBLIOTHEQUE
+</button>
+
+
+<!-- CONTROLES FILTRES -->
+
+<!-- CONTROLES FILTRES -->
+
+<div id="filters-panel">
+
+  <!-- FILTRES ON/OFF -->
+   <!-- TEXTURES CHANTIER -->
+
+<div class="filter-block">
+
+  <label>
+    <input type="checkbox" id="fx-concrete">
+    Béton
+  </label>
+
+  <input type="range" id="fx-concrete-intensity" min="0" max="100" value="50">
+
+</div>
+
+
+<div class="filter-block">
+
+  <label>
+    <input type="checkbox" id="fx-fracture">
+    Fracture
+  </label>
+
+  <input
+    type="range"
+    id="fx-fracture-intensity"
+    min="0"
+    max="100"
+    value="50"
+  >
+
+</div>
+
+
+<div class="filter-block">
+
+  <label>
+    <input type="checkbox" id="fx-blend">
+    Superposition
+  </label>
+
+  <input
+    type="range"
+    id="fx-blend-intensity"
+    min="0"
+    max="100"
+    value="50"
+  >
+
+</div>
+
+<div class="filter-block">
+
+  <label>
+    <input type="checkbox" id="fx-cutmix">
+   Recomposition
+  </label>
+
+  <input
+    type="range"
+    id="fx-cutmix-intensity"
+    min="0"
+    max="100"
+    value="50"
+  >
+
+</div>
+
+  <!-- FILTRE CHANTIER RGB -->
+
+  <div class="filter-block">
+
+    <label>
+      <input type="checkbox" id="fx-construction">
+      Couleures chantier
+    </label>
+
+    <input
+      type="range"
+      id="fx-construction-intensity"
+      min="0"
+      max="100"
+      value="50"
+    >
+
+  </div>
+
+ 
+
+ 
+
+
+
+</div>
+
+
+<div id="gallery"></div>
+
+<div id="container"
+class="fanzine-container"></div>
+
+</body>
+</html>
