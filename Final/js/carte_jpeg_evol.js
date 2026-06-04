@@ -187,12 +187,12 @@ for (let i = 0; i < 359; i++) {
   );
 }
 
-for (let i = 0; i < 127; i++) {
+//for (let i = 0; i < 127; i++) {
 
-  let num = nf(i, 5);
+  //let num = nf(i, 5);
 
-  gifFrames12.push(
-    loadImage("gif12/12gif/12gif_" + num + ".png")
+ // gifFrames12.push(
+   // loadImage("gif12/12gif/12gif_" + num + ".png")
   );
 }
 
