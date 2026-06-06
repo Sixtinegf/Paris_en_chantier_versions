@@ -4,6 +4,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
 <title>Paris Chantiers</title>
 
@@ -11,7 +12,7 @@
 <link rel="stylesheet" href="css/carte.css">
 
 <script src="js/p5.min.js"></script>
-<script src="js/carte_jpeg_evol.js" defer></script>
+<script src="js/carte_biblio.js" defer></script>
 </head>
 
 <body>
@@ -34,6 +35,14 @@
 
 <!-- CANVAS -->
 <div id="canvas-container"></div>
+
+<div id="photoPanel">
+
+  <h2>Archives citoyennes</h2>
+
+  <div id="photoGallery"></div>
+
+</div>
 
 <!-- UI -->
 <div id="ui-bar">
