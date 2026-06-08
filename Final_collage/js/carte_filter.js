@@ -29,7 +29,16 @@ let draggedPhotoUrl = null;
 let draggedPhotoArrId = null;
 
 let collageMapMode = false;
+let collageCache = {};
+let collageCacheDirty = {};
+let arrondissementMasks = {};
+let arrondissementBounds = {};
 
+let timelineCursorEl;
+let timelineProgressEl;
+let labelStartEl;
+let labelEndEl;
+let labelMiddleEl;
 
 // "rgb" | "concrete" | "fracture" | "wild" | "none"
 
@@ -130,12 +139,17 @@ function setup() {
 console.log("ui:", document.getElementById("ui"));
 console.log("intro:", document.getElementById("intro"));
 
-
+timelineCursorEl = document.getElementById("timelineCursor");
+timelineProgressEl = document.getElementById("timelineProgress");
+labelStartEl = document.getElementById("labelStart");
+labelEndEl = document.getElementById("labelEnd");
+labelMiddleEl = document.getElementById("labelMiddle");
   // =========================
   // DATA SAFE
   // =========================
   data = Object.values(data || {});
   data1 = Object.values(data1 || {});
+  prepareArrondissementMasks();
 
   // =========================
   // TIME INIT
@@ -269,7 +283,6 @@ function draw() {
     resetMatrix();
   
 
-
   // =========================
   // SAFE TIME NORMALIZATION
   // =========================
@@ -283,21 +296,14 @@ function draw() {
   // =========================
   // TIMELINE UI SYNC (IMPORTANT)
   // =========================
-  const cursor = document.getElementById("timelineCursor");
-  const progress = document.getElementById("timelineProgress");
 
-  if (cursor) cursor.style.left = (t * 100) + "%";
-  if (progress) progress.style.width = (t * 100) + "%";
+  if (timelineCursorEl) timelineCursorEl.style.left = (t * 100) + "%";
+if (timelineProgressEl) timelineProgressEl.style.width = (t * 100) + "%";
 
-  function formatDate(ts) {
-  let d = new Date(ts);
-  return d.getFullYear();
-}
-
-document.getElementById("labelStart").innerText = formatDate(minTime);
-document.getElementById("labelEnd").innerText = formatDate(maxTime);
-document.getElementById("labelMiddle").innerText = formatDate(currentTime);
-
+if (labelStartEl) labelStartEl.innerText = formatYear(minTime);
+if (labelEndEl) labelEndEl.innerText = formatYear(maxTime);
+if (labelMiddleEl) labelMiddleEl.innerText = formatYear(currentTime);
+  
   // =========================
   // CAMERA LIMITS
   // =========================
@@ -530,6 +536,10 @@ function mousePressed() {
   }
 }
 
+function formatYear(ts) {
+  return new Date(ts).getFullYear();
+}
+
 function mouseDragged() {
 
   if (draggedPhotoUrl) {
@@ -541,14 +551,22 @@ function mouseDragged() {
 
   for (let p of studioPhotos) {
     if (p.dragging) {
-      p.x = mx - p.offsetX;
-      p.y = my - p.offsetY;
-      return;
-    }
+  p.x = mx - p.offsetX;
+  p.y = my - p.offsetY;
+  markCollageDirty(p.arrId);
+  return;
+}
   }
 
   offsetX += movedX;
   offsetY += movedY;
+}
+
+function resetCollages() {
+  studioPhotos = [];
+  collageCache = {};
+  collageCacheDirty = {};
+  console.log("Collages reset");
 }
 
 
@@ -755,7 +773,7 @@ function mapTimeNonLinear(t) {
 }
 
 async function loadArrondissementPhotos(arrId) {
-
+  photosLoading = true;
 
   const gallery = document.getElementById("photoGallery");
   gallery.innerHTML = "";
@@ -766,7 +784,8 @@ async function loadArrondissementPhotos(arrId) {
     .eq("arrondissement", arrId)
     .order("created_at", { ascending: false });
 
-    photosLoading = false;
+  photosLoading = false;
+
   if (error) {
     console.log(error);
     return;
@@ -881,6 +900,7 @@ function mouseReleased() {
   for (let p of studioPhotos) {
     p.dragging = false;
   }
+  
 
   // 2. Si aucune photo de l'archive n'est en cours de drag
   if (!draggedPhotoUrl) {
@@ -975,6 +995,7 @@ filterModes: [...collageFilterModes],
   dragging: false,
   pinned: true
 });
+markCollageDirty(targetArrId);
   }
 
   // 7. Ajouter l'image, soit depuis l'image déjà chargée, soit via loadImage
@@ -1128,6 +1149,46 @@ function isPhotoTouchingAnother(p, idArr, photoSize) {
   }
 
   return false;
+}
+
+function prepareArrondissementMasks() {
+  for (let arr of data1) {
+    const id = Number(arr.c_ar);
+
+    const mask = createGraphics(img.width, img.height);
+    mask.clear();
+    drawArrondissementMask(mask, id);
+
+    arrondissementMasks[id] = mask;
+    arrondissementBounds[id] = getArrBounds(arr);
+  }
+}
+
+function getArrBounds(arr) {
+  let geom = arr.geom.geometry;
+
+  let coords = geom.type === "Polygon"
+    ? geom.coordinates[0]
+    : geom.coordinates.flat(2);
+
+  let minX = Infinity, maxX = -Infinity;
+  let minY = Infinity, maxY = -Infinity;
+
+  for (let p of coords) {
+    let x = map(p[0], lonMin, lonMax, 0, img.width);
+    let y = map(p[1], latMax, latMin, 0, img.height);
+
+    minX = min(minX, x);
+    maxX = max(maxX, x);
+    minY = min(minY, y);
+    maxY = max(maxY, y);
+  }
+
+  return { minX, minY, maxX, maxY };
+}
+
+function markCollageDirty(arrId) {
+  collageCacheDirty[Number(arrId)] = true;
 }
 function drawMixedPhoto(pg, p, photoSize, touching) {
   const ctx = pg.drawingContext;
@@ -1421,41 +1482,62 @@ function overlayConstructionLines(ctx, canvas, params) {
 }
 
 function drawCollageForArr(arrId) {
-  pg.clear();
+  arrId = Number(arrId);
 
-  for (let p of studioPhotos) {
-    if (p.arrId !== arrId) continue;
-    if (!p.img || p.img.width <= 0) continue;
-
-    pg.push();
-
-    pg.imageMode(CENTER);
-    pg.translate(p.x, p.y);
-    pg.rotate(p.rot || 0);
-
-    let photoSize = 260 * (p.scale || 1);
-    const touching = isPhotoTouchingAnother(p, arrId, photoSize);
-
-    // IMPORTANT : utiliser drawMixedPhoto pour tous les filtres,
-    // pas seulement pour fracture
-    drawMixedPhoto(pg, p, photoSize, touching);
-
-    pg.noTint();
-    pg.noFill();
-    pg.stroke(255, touching ? 55 : 120);
-    pg.strokeWeight(touching ? 0.8 : 1.5);
-    pg.rectMode(CENTER);
-    pg.rect(0, 0, photoSize, photoSize);
-
-    pg.pop();
+  if (!collageCache[arrId]) {
+    collageCache[arrId] = createGraphics(img.width, img.height);
+    collageCacheDirty[arrId] = true;
   }
 
-  pg.drawingContext.save();
-  pg.drawingContext.globalCompositeOperation = "destination-in";
-  drawArrondissementMask(pg, arrId);
-  pg.drawingContext.restore();
+  if (collageCacheDirty[arrId]) {
+    rebuildCollageCacheForArr(arrId);
+    collageCacheDirty[arrId] = false;
+  }
 
-  image(pg, 0, 0);
+  image(collageCache[arrId], 0, 0);
+}
+
+function rebuildCollageCacheForArr(arrId) {
+  const target = collageCache[arrId];
+  target.clear();
+
+  const photos = studioPhotos.filter(p => p.arrId === arrId);
+
+  for (let p of photos) {
+    if (!p.img || p.img.width <= 0) continue;
+
+    target.push();
+
+    target.imageMode(CENTER);
+    target.translate(p.x, p.y);
+    target.rotate(p.rot || 0);
+
+    const photoSize = 260 * (p.scale || 1);
+    const touching = isPhotoTouchingAnother(p, arrId, photoSize);
+
+    drawMixedPhoto(target, p, photoSize, touching);
+
+    // Bordure plus graphique, mais légère
+    target.noTint();
+    target.noFill();
+    target.stroke(255, touching ? 45 : 130);
+    target.strokeWeight(touching ? 0.8 : 1.4);
+    target.rectMode(CENTER);
+    target.rect(0, 0, photoSize, photoSize);
+
+    target.pop();
+  }
+
+  target.drawingContext.save();
+  target.drawingContext.globalCompositeOperation = "destination-in";
+
+  if (arrondissementMasks[arrId]) {
+    target.image(arrondissementMasks[arrId], 0, 0);
+  } else {
+    drawArrondissementMask(target, arrId);
+  }
+
+  target.drawingContext.restore();
 }
 function overlayPosterBlocks(ctx, canvas, params) {
   const intensity = params.intensity ?? 1;
@@ -1928,20 +2010,7 @@ function textureConcrete(ctx, canvas, params) {
 
   ctx.putImageData(imageData, 0, 0);
 }
-function resetCollages() {
-  studioPhotos = [];
 
-  // Si tu as ajouté le système de cache
-  if (typeof collageCache !== "undefined") {
-    collageCache = {};
-  }
-
-  if (typeof collageCacheDirty !== "undefined") {
-    collageCacheDirty = {};
-  }
-
-  console.log("Collages reset");
-}
 function addConcreteClouds(ctx, canvas, params = {}) {
   const intensity = params.intensity ?? 1;
 
