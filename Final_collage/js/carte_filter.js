@@ -35,7 +35,7 @@ let collageMapMode = false;
 
 
 let collageIntensity = 1;
-let collageFilterMode = [] ;
+let collageFilterModes = [] ;
 
 
 
@@ -252,6 +252,14 @@ window.addEventListener("mousemove", (e) => {
   if (resetBtn) resetBtn.onclick = resetMap;
 setupCollageControls();
 
+const resetCollageBtn = document.getElementById("resetCollageBtn");
+
+if (resetCollageBtn) {
+  resetCollageBtn.addEventListener("click", () => {
+    resetCollages();
+  });
+}
+
 }
 
 
@@ -367,6 +375,7 @@ if (!photosLoading) {
   // =========================
   // POINTS
   // =========================
+  if (!collageMapMode) {
   for (let i = 0; i < data.length; i++) {
     let d = data[i];
 
@@ -476,6 +485,8 @@ if (!hidePoints) {
   );
 }
   }
+
+   }
 
   pop();
 // aperçu de la photo pendant le drag depuis l'archive
@@ -748,7 +759,6 @@ function mapTimeNonLinear(t) {
 
 async function loadArrondissementPhotos(arrId) {
 
-  studioPhotos = studioPhotos.filter(p => p.arrId !== Number(arrId));
 
   const gallery = document.getElementById("photoGallery");
   gallery.innerHTML = "";
@@ -1921,7 +1931,20 @@ function textureConcrete(ctx, canvas, params) {
 
   ctx.putImageData(imageData, 0, 0);
 }
+function resetCollages() {
+  studioPhotos = [];
 
+  // Si tu as ajouté le système de cache
+  if (typeof collageCache !== "undefined") {
+    collageCache = {};
+  }
+
+  if (typeof collageCacheDirty !== "undefined") {
+    collageCacheDirty = {};
+  }
+
+  console.log("Collages reset");
+}
 function addConcreteClouds(ctx, canvas, params = {}) {
   const intensity = params.intensity ?? 1;
 
