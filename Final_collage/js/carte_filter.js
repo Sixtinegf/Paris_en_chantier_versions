@@ -553,7 +553,7 @@ function mouseDragged() {
     if (p.dragging) {
   p.x = mx - p.offsetX;
   p.y = my - p.offsetY;
-  markCollageDirty(p.arrId);
+  
   return;
 }
   }
@@ -897,10 +897,18 @@ function getHoveredArrondissement(mx, my) {
 function mouseReleased() {
 
   // 1. Arrêter le déplacement d'une photo déjà collée
-  for (let p of studioPhotos) {
-    p.dragging = false;
+  let movedArrId = null;
+
+for (let p of studioPhotos) {
+  if (p.dragging) {
+    movedArrId = p.arrId;
   }
-  
+  p.dragging = false;
+}
+
+if (movedArrId !== null) {
+  markCollageDirty(movedArrId);
+}
 
   // 2. Si aucune photo de l'archive n'est en cours de drag
   if (!draggedPhotoUrl) {
