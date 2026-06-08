@@ -1,0 +1,300 @@
+/* =========================
+   GLOBAL RESET
+========================= */
+
+canvas {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+
+  overflow: hidden;
+
+  background: white;
+  color: black;
+
+  font-family: monospace;
+}
+
+/* =========================
+   UI (GLOBAL STYLE UNIFIÉ)
+========================= */
+
+#ui,
+#backBtn,
+#resetMapBtn,
+#intro button {
+  font-family: monospace;
+}
+
+/* =========================
+   UI FILTRES
+========================= */
+
+#ui {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+
+  z-index: 50;
+
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  background: rgba(255,255,255,0.92);
+
+  padding: 12px;
+
+  border: 1px solid black;
+}
+
+#ui label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  cursor: pointer;
+  margin: 0;
+}
+
+/* =========================
+   INTRO
+========================= */
+
+#intro {
+  position: relative;
+
+  width: 100vw;
+  height: 100vh;
+
+  display: flex;
+
+  background: white;
+
+  z-index: 10000;
+
+  overflow: hidden;
+}
+
+#intro.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* wrapper texte */
+.intro-wrapper {
+  position: absolute;
+  top: 30px;
+  left: 50%;
+
+  transform: translateX(-50%);
+
+  width: 420px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  text-align: center;
+
+  z-index: 10;
+}
+
+/* =========================
+   TITRE INTRO
+========================= */
+
+.intro-title {
+  font-family: Impact, sans-serif;
+
+  font-size: 40px;
+
+  letter-spacing: 0.04em;
+
+  margin-bottom: 20px;
+
+  text-transform: uppercase;
+}
+
+.intro-sub {
+  font-size: 13px;
+
+  opacity: 0.7;
+
+  margin-bottom: 20px;
+
+  font-family: monospace;
+}
+
+/* =========================
+   BUTTON INTRO
+========================= */
+
+#intro button {
+  padding: 10px 14px;
+
+  border: 1px solid black;
+
+  background: white;
+
+  font-size: 13px;
+
+  cursor: pointer;
+
+  transition: 0.15s ease;
+}
+
+#intro button:hover {
+  background: black;
+  color: white;
+}
+
+/* =========================
+   VIDEO
+========================= */
+
+.intro-video {
+  position: absolute;
+
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#introVideo {
+  width: 100%;
+  height: 100%;
+
+  object-fit: contain;
+
+  position: relative;
+
+  transform: scale(0.85);
+}
+
+/* =========================
+   TEXT OVER VIDEO
+========================= */
+
+.texte-video {
+  position: absolute;
+
+  top: 50%;
+  left: 20%;
+
+  width: 30%;
+
+  z-index: 2;
+
+  pointer-events: none;
+}
+
+/* =========================
+   BACK / RESET
+========================= */
+
+#backBtn,
+#resetMapBtn {
+  position: fixed;
+
+  bottom: 20px;
+
+  padding: 10px 14px;
+
+  border: 1px solid black;
+
+  background: white;
+
+  cursor: pointer;
+
+  z-index: 60;
+}
+
+#backBtn {
+  right: 20px;
+}
+
+#resetMapBtn {
+  left: 20px;
+}
+
+#backBtn:hover,
+#resetMapBtn:hover {
+  background: black;
+  color: white;
+}
+
+/* =========================
+   TIMELINE
+========================= */
+
+#timelineBar {
+  position: fixed;
+
+  bottom: 30px;
+  left: 10%;
+
+  width: 80%;
+  height: 6px;
+
+  background: #ddd;
+
+  z-index: 9999;
+}
+
+#timelineProgress {
+  position: absolute;
+
+  height: 100%;
+  width: 0%;
+
+  background-image: url("../Pictogramme.png");
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-position: center;
+
+  opacity: 0.6;
+}
+
+#timelineCursor {
+  position: absolute;
+
+  top: -12px;
+  left: 0;
+
+  width: 24px;
+  height: 24px;
+
+  background-image: url("../Pictogramme.png");
+  background-size: contain;
+
+  cursor: pointer;
+
+  transform: translateX(-50%);
+}
+
+.timelineLabels {
+  position: absolute;
+
+  width: 100%;
+
+  top: 15px;
+
+  font-size: 12px;
+
+  display: flex;
+  justify-content: space-between;
+
+  font-family: monospace;
+}
