@@ -1,0 +1,786 @@
+{
+    "total_count": 4869,
+    "results": [
+      {
+        "num_emprise": "EC479219",
+        "cp_arrondissement": "75014",
+        "date_debut": "2026-02-16",
+        "date_fin": "2026-03-16",
+        "chantier_categorie": "Opérateurs de réseau (gaz-électricité-RATP-etc)",
+        "moa_principal": "GRDF",
+        "surface": 2.05,
+        "chantier_synthese": "Travaux sur réseau de gaz",
+        "localisation_detail": [
+          "EMPRISE_TROTTOIR"
+        ],
+        "localisation_stationnement": null,
+        "demande_cite_id": "934070",
+        "chantier_cite_id": "311854",
+        "geo_shape": {
+          "type": "Feature",
+          "geometry": {
+            "coordinates": [
+              [
+                [2.32399893386947, 48.8308895598841],
+                [2.32399080891253, 48.8308778265872],
+                [2.32397325968701, 48.8308836470767],
+                [2.32398207388394, 48.83089538517],
+                [2.32399893386947, 48.8308895598841]
+              ]
+            ],
+            "type": "Polygon"
+          },
+          "properties": {
+  
+          }
+        },
+        "geo_point_2d": {
+          "lon": 2.32398622310297,
+          "lat": 48.8308865812609
+        }
+      },
+      {
+        "num_emprise": "EC471123",
+        "cp_arrondissement": "75020",
+        "date_debut": "2026-01-07",
+        "date_fin": "2026-03-20",
+        "chantier_categorie": "Opérateurs de réseau (gaz-électricité-RATP-etc)",
+        "moa_principal": "ENEDIS",
+        "surface": 1.01,
+        "chantier_synthese": "Travaux sur réseau électrique",
+        "localisation_detail": [
+          "EMPRISE_TROTTOIR"
+        ],
+        "localisation_stationnement": null,
+        "demande_cite_id": "927618",
+        "chantier_cite_id": "306644",
+        "geo_shape": {
+          "type": "Feature",
+          "geometry": {
+            "coordinates": [
+              [
+                [2.39857987790051, 48.8533035283953],
+                [2.39859089028698, 48.8533059517342],
+                [2.39859652434606, 48.8532961438649],
+                [2.39858412728251, 48.8532940778034],
+                [2.39857987790051, 48.8533035283953]
+              ]
+            ],
+            "type": "Polygon"
+          },
+          "properties": {
+  
+          }
+        },
+        "geo_point_2d": {
+          "lon": 2.3985879508697,
+          "lat": 48.8532998614854
+        }
+      },
+      {
+        "num_emprise": "EC492867",
+        "cp_arrondissement": "75014",
+        "date_debut": "2026-03-09",
+        "date_fin": "2026-04-10",
+        "chantier_categorie": "Opérateurs de réseau (gaz-électricité-RATP-etc)",
+        "moa_principal": "ENEDIS",
+        "surface": 6.19,
+        "chantier_synthese": "Travaux sur réseau électrique",
+        "localisation_detail": [
+          "EMPRISE_TROTTOIR"
+        ],
+        "localisation_stationnement": null,
+        "demande_cite_id": "944980",
+        "chantier_cite_id": "320638",
+        "geo_shape": {
+          "type": "Feature",
+          "geometry": {
+            "coordinates": [
+              [
+                [2.33354668516425, 48.8342768872735],
+                [2.33354513191106, 48.8342905400633],
+                [2.3336009831904, 48.8342922173975],
+                [2.33360322126251, 48.8342790244035],
+                [2.33354668516425, 48.8342768872735]
+              ]
+            ],
+            "type": "Polygon"
+          },
+          "properties": {
+  
+          }
+        },
+        "geo_point_2d": {
+          "lon": 2.33357385590723,
+          "lat": 48.8342846472868
+        }
+      },
+      {
+        "num_emprise": "EC492444",
+        "cp_arrondissement": "75008",
+        "date_debut": "2026-03-02",
+        "date_fin": "2026-04-10",
+        "chantier_categorie": "Opérateurs de réseau (gaz-électricité-RATP-etc)",
+        "moa_principal": "ENEDIS",
+        "surface": 17.49,
+        "chantier_synthese": "Travaux sur réseau électrique",
+        "localisation_detail": [
+          "EMPRISE_TROTTOIR"
+        ],
+        "localisation_stationnement": null,
+        "demande_cite_id": "944661",
+        "chantier_cite_id": "320380",
+        "geo_shape": {
+          "type": "Feature",
+          "geometry": {
+            "coordinates": [
+              [
+                [2.30884625605075, 48.8708799705895],
+                [2.30885149010887, 48.8708901193287],
+                [2.30900629927788, 48.8708414296097],
+                [2.30899727078415, 48.8708282218877],
+                [2.30884625605075, 48.8708799705895]
+              ]
+            ],
+            "type": "Polygon"
+          },
+          "properties": {
+  
+          }
+        },
+        "geo_point_2d": {
+          "lon": 2.30892924812767,
+          "lat": 48.8708586605164
+        }
+      },
+      {
+        "num_emprise": "EC486641",
+        "cp_arrondissement": "75014",
+        "date_debut": "2026-02-26",
+        "date_fin": "2026-03-20",
+        "chantier_categorie": "Opérateurs de réseau (gaz-électricité-RATP-etc)",
+        "moa_principal": "GRDF",
+        "surface": 0.42,
+        "chantier_synthese": "Travaux sur réseau de gaz",
+        "localisation_detail": [
+          "EMPRISE_TROTTOIR"
+        ],
+        "localisation_stationnement": null,
+        "demande_cite_id": "940059",
+        "chantier_cite_id": "316694",
+        "geo_shape": {
+          "type": "Feature",
+          "geometry": {
+            "coordinates": [
+              [
+                [2.33632148715818, 48.8378044035235],
+                [2.33633045701515, 48.8378042257514],
+                [2.33633018191568, 48.837798759666],
+                [2.33632191299461, 48.837798031167],
+                [2.33632148715818, 48.8378044035235]
+              ]
+            ],
+            "type": "Polygon"
+          },
+          "properties": {
+  
+          }
+        },
+        "geo_point_2d": {
+          "lon": 2.33632589662357,
+          "lat": 48.8378013908649
+        }
+      },
+      {
+        "num_emprise": "EC471126",
+        "cp_arrondissement": "75020",
+        "date_debut": "2026-01-07",
+        "date_fin": "2026-03-20",
+        "chantier_categorie": "Opérateurs de réseau (gaz-électricité-RATP-etc)",
+        "moa_principal": "ENEDIS",
+        "surface": 8.33,
+        "chantier_synthese": "Travaux sur réseau électrique",
+        "localisation_detail": [
+          "EMPRISE_CHAUSSEE"
+        ],
+        "localisation_stationnement": null,
+        "demande_cite_id": "927618",
+        "chantier_cite_id": "306644",
+        "geo_shape": {
+          "type": "Feature",
+          "geometry": {
+            "coordinates": [
+              [
+                [2.39917209950278, 48.8521282129202],
+                [2.39926292688014, 48.8521505267895],
+                [2.3992685509273, 48.8521414473033],
+                [2.39917957860827, 48.8521179286298],
+                [2.39917209950278, 48.8521282129202]
+              ]
+            ],
+            "type": "Polygon"
+          },
+          "properties": {
+  
+          }
+        },
+        "geo_point_2d": {
+          "lon": 2.39921967642131,
+          "lat": 48.8521342546415
+        }
+      },
+      {
+        "num_emprise": "EC428613",
+        "cp_arrondissement": "75018",
+        "date_debut": "2025-01-13",
+        "date_fin": "2026-10-31",
+        "chantier_categorie": "Opérateurs de réseau (gaz-électricité-RATP-etc)",
+        "moa_principal": "ENEDIS",
+        "surface": 208.64,
+        "chantier_synthese": "Travaux sur réseau électrique",
+        "localisation_detail": [
+          "EMPRISE_TROTTOIR"
+        ],
+        "localisation_stationnement": null,
+        "demande_cite_id": "894277",
+        "chantier_cite_id": "279465",
+        "geo_shape": {
+          "type": "Feature",
+          "geometry": {
+            "coordinates": [
+              [
+                [2.32792394457198, 48.8929957186902],
+                [2.32798254481428, 48.8930568373526],
+                [2.33001683677949, 48.8935170534649],
+                [2.33002284970645, 48.8935029965103],
+                [2.32798885658159, 48.8930493589233],
+                [2.32793813302545, 48.8929932937033],
+                [2.32792394457198, 48.8929957186902]
+              ]
+            ],
+            "type": "Polygon"
+          },
+          "properties": {
+  
+          }
+        },
+        "geo_point_2d": {
+          "lon": 2.32905491461807,
+          "lat": 48.8932924618352
+        }
+      },
+      {
+        "num_emprise": "EC490811",
+        "cp_arrondissement": "75017",
+        "date_debut": "2026-03-02",
+        "date_fin": "2027-03-19",
+        "chantier_categorie": "Opérateurs de réseau (gaz-électricité-RATP-etc)",
+        "moa_principal": "ENEDIS",
+        "surface": 5.4,
+        "chantier_synthese": "Travaux sur réseau électrique",
+        "localisation_detail": [
+          "EMPRISE_TROTTOIR"
+        ],
+        "localisation_stationnement": null,
+        "demande_cite_id": "943544",
+        "chantier_cite_id": "319474",
+        "geo_shape": {
+          "type": "Feature",
+          "geometry": {
+            "coordinates": [
+              [
+                [2.29671794216266, 48.8789558860445],
+                [2.29672562110123, 48.8789495566447],
+                [2.29666150914462, 48.878917076314],
+                [2.29665314201188, 48.8789231750334],
+                [2.29671794216266, 48.8789558860445]
+              ]
+            ],
+            "type": "Polygon"
+          },
+          "properties": {
+  
+          }
+        },
+        "geo_point_2d": {
+          "lon": 2.29668948605409,
+          "lat": 48.8789363972701
+        }
+      },
+      {
+        "num_emprise": "EC492664",
+        "cp_arrondissement": "75015",
+        "date_debut": "2026-03-16",
+        "date_fin": "2026-04-17",
+        "chantier_categorie": "Opérateurs de réseau (gaz-électricité-RATP-etc)",
+        "moa_principal": "ORANGE",
+        "surface": 4.03,
+        "chantier_synthese": "Travaux sur réseau télécom",
+        "localisation_detail": [
+          "EMPRISE_TROTTOIR"
+        ],
+        "localisation_stationnement": null,
+        "demande_cite_id": "944834",
+        "chantier_cite_id": "320523",
+        "geo_shape": {
+          "type": "Feature",
+          "geometry": {
+            "coordinates": [
+              [
+                [2.28903501200104, 48.8330157911608],
+                [2.28902239451684, 48.8330242548374],
+                [2.28905187064413, 48.8330440679345],
+                [2.28906405765646, 48.8330356025956],
+                [2.28903501200104, 48.8330157911608]
+              ]
+            ],
+            "type": "Polygon"
+          },
+          "properties": {
+  
+          }
+        },
+        "geo_point_2d": {
+          "lon": 2.28904328412,
+          "lat": 48.8330299059947
+        }
+      },
+      {
+        "num_emprise": "EC466532",
+        "cp_arrondissement": "75015",
+        "date_debut": "2025-10-17",
+        "date_fin": "2026-04-30",
+        "chantier_categorie": "Opérateurs de réseau (gaz-électricité-RATP-etc)",
+        "moa_principal": "ENEDIS",
+        "surface": 61.8,
+        "chantier_synthese": "Travaux sur réseau électrique",
+        "localisation_detail": [
+          "EMPRISE_TROTTOIR"
+        ],
+        "localisation_stationnement": null,
+        "demande_cite_id": "923743",
+        "chantier_cite_id": "303558",
+        "geo_shape": {
+          "type": "Feature",
+          "geometry": {
+            "coordinates": [
+              [
+                [2.30445417474977, 48.8365873634766],
+                [2.30445281599505, 48.8365857618884],
+                [2.30419473582591, 48.8366179585516],
+                [2.30358285886968, 48.8366952268835],
+                [2.30339353735733, 48.836718260007],
+                [2.30338289765769, 48.8367143271461],
+                [2.30338139424205, 48.8367236538712],
+                [2.30339412460558, 48.8367260043213],
+                [2.30445687266875, 48.836591932685],
+                [2.30445417474977, 48.8365873634766]
+              ]
+            ],
+            "type": "Polygon"
+          },
+          "properties": {
+  
+          }
+        },
+        "geo_point_2d": {
+          "lon": 2.30391075721368,
+          "lat": 48.8366572712324
+        }
+      },
+      {
+        "num_emprise": "EC489401",
+        "cp_arrondissement": "75010",
+        "date_debut": "2026-03-09",
+        "date_fin": "2026-04-03",
+        "chantier_categorie": "Opérateurs de réseau (gaz-électricité-RATP-etc)",
+        "moa_principal": "ORANGE",
+        "surface": 8.34,
+        "chantier_synthese": "Travaux sur réseau télécom",
+        "localisation_detail": [
+          "EMPRISE_TROTTOIR"
+        ],
+        "localisation_stationnement": null,
+        "demande_cite_id": "942489",
+        "chantier_cite_id": "318605",
+        "geo_shape": {
+          "type": "Feature",
+          "geometry": {
+            "coordinates": [
+              [
+                [2.35843984884267, 48.8760303082724],
+                [2.35843100186541, 48.876012900099],
+                [2.35837822684695, 48.8760240010237],
+                [2.35838793194432, 48.8760416979901],
+                [2.35843984884267, 48.8760303082724]
+              ]
+            ],
+            "type": "Polygon"
+          },
+          "properties": {
+  
+          }
+        },
+        "geo_point_2d": {
+          "lon": 2.35840913742234,
+          "lat": 48.8760272318272
+        }
+      },
+      {
+        "num_emprise": "EC490281",
+        "cp_arrondissement": "75011",
+        "date_debut": "2026-03-02",
+        "date_fin": "2026-03-27",
+        "chantier_categorie": "Opérateurs de réseau (gaz-électricité-RATP-etc)",
+        "moa_principal": "ORANGE",
+        "surface": 2.86,
+        "chantier_synthese": "Travaux sur réseau télécom",
+        "localisation_detail": [
+          "EMPRISE_TROTTOIR"
+        ],
+        "localisation_stationnement": null,
+        "demande_cite_id": "943141",
+        "chantier_cite_id": "319140",
+        "geo_shape": {
+          "type": "Feature",
+          "geometry": {
+            "coordinates": [
+              [
+                [2.37269432365012, 48.8623298840224],
+                [2.37272350504964, 48.8623136437252],
+                [2.37271532356036, 48.8623054042147],
+                [2.37268681402534, 48.8623230141364],
+                [2.37269432365012, 48.8623298840224]
+              ]
+            ],
+            "type": "Polygon"
+          },
+          "properties": {
+  
+          }
+        },
+        "geo_point_2d": {
+          "lon": 2.37270532973276,
+          "lat": 48.8623177717285
+        }
+      },
+      {
+        "num_emprise": "EC484007",
+        "cp_arrondissement": "75012",
+        "date_debut": "2026-02-02",
+        "date_fin": "2026-03-31",
+        "chantier_categorie": "Opérateurs de réseau (gaz-électricité-RATP-etc)",
+        "moa_principal": "ENEDIS",
+        "surface": 15.85,
+        "chantier_synthese": "Travaux sur réseau électrique",
+        "localisation_detail": [
+          "EMPRISE_TROTTOIR"
+        ],
+        "localisation_stationnement": null,
+        "demande_cite_id": "937929",
+        "chantier_cite_id": "314954",
+        "geo_shape": {
+          "type": "Feature",
+          "geometry": {
+            "coordinates": [
+              [
+                [2.40504726608029, 48.8426766534294],
+                [2.40508872067371, 48.8426713950921],
+                [2.40507750179726, 48.8426267131713],
+                [2.4050353682223, 48.8426310570785],
+                [2.40504726608029, 48.8426766534294]
+              ]
+            ],
+            "type": "Polygon"
+          },
+          "properties": {
+  
+          }
+        },
+        "geo_point_2d": {
+          "lon": 2.405062129849,
+          "lat": 48.8426514243457
+        }
+      },
+      {
+        "num_emprise": "EC442299",
+        "cp_arrondissement": "75009",
+        "date_debut": "2025-04-13",
+        "date_fin": "2026-04-13",
+        "chantier_categorie": "Ville de Paris (Tvx sur espace ou édifice public)",
+        "moa_principal": "Ville de Paris (autres)",
+        "surface": 12.58,
+        "chantier_synthese": "Travaux sur édifice public (VdP*)",
+        "localisation_detail": [
+          "EMPRISE_CHAUSSEE"
+        ],
+        "localisation_stationnement": [
+          "ZONE_LIVRAISON"
+        ],
+        "demande_cite_id": "904900",
+        "chantier_cite_id": "288171",
+        "geo_shape": {
+          "type": "Feature",
+          "geometry": {
+            "coordinates": [
+              [
+                [2.34062187638321, 48.8733653157312],
+                [2.3406131219236, 48.8733206423227],
+                [2.34057926447482, 48.8733231880026],
+                [2.340587673997, 48.8733678595134],
+                [2.34062187638321, 48.8733653157312]
+              ]
+            ],
+            "type": "Polygon"
+          },
+          "properties": {
+  
+          }
+        },
+        "geo_point_2d": {
+          "lon": 2.34060049306656,
+          "lat": 48.8733442884236
+        }
+      },
+      {
+        "num_emprise": "EC463264",
+        "cp_arrondissement": "75016",
+        "date_debut": "2025-09-15",
+        "date_fin": "2026-03-31",
+        "chantier_categorie": "Ville de Paris (Tvx sur espace ou édifice public)",
+        "moa_principal": "Section de l'Assainissement de Paris",
+        "surface": 48.86,
+        "chantier_synthese": "Travaux sur réseau d’assainissement",
+        "localisation_detail": [
+          "EMPRISE_CHAUSSEE",
+          "EMPRISE_TROTTOIR"
+        ],
+        "localisation_stationnement": null,
+        "demande_cite_id": "921200",
+        "chantier_cite_id": "301472",
+        "geo_shape": {
+          "type": "Feature",
+          "geometry": {
+            "coordinates": [
+              [
+                [2.29916183981558, 48.8672348110422],
+                [2.29922175853006, 48.8670551556333],
+                [2.2991891044726, 48.8670519893929],
+                [2.29913035297731, 48.8672286756801],
+                [2.29916183981558, 48.8672348110422]
+              ]
+            ],
+            "type": "Polygon"
+          },
+          "properties": {
+  
+          }
+        },
+        "geo_point_2d": {
+          "lon": 2.29917583509854,
+          "lat": 48.8671425856472
+        }
+      },
+      {
+        "num_emprise": "EC490265",
+        "cp_arrondissement": "75008",
+        "date_debut": "2026-02-13",
+        "date_fin": "2026-04-03",
+        "chantier_categorie": "Opérateurs de réseau (gaz-électricité-RATP-etc)",
+        "moa_principal": "ENEDIS",
+        "surface": 41.26,
+        "chantier_synthese": "Travaux sur réseau électrique",
+        "localisation_detail": [
+          "EMPRISE_TROTTOIR"
+        ],
+        "localisation_stationnement": null,
+        "demande_cite_id": "943135",
+        "chantier_cite_id": "319135",
+        "geo_shape": {
+          "type": "Feature",
+          "geometry": {
+            "coordinates": [
+              [
+                [2.2998387114497, 48.8714020796617],
+                [2.29985835796678, 48.8713877052463],
+                [2.29987435746391, 48.871364616434],
+                [2.29986589422389, 48.8713405571368],
+                [2.29978229680166, 48.8712572744883],
+                [2.29975199428488, 48.8712707582575],
+                [2.29983621876044, 48.8713540445942],
+                [2.29984423158793, 48.871364854817],
+                [2.29983710148965, 48.8713817855348],
+                [2.29982825570703, 48.8713862871714],
+                [2.2998387114497, 48.8714020796617]
+              ]
+            ],
+            "type": "Polygon"
+          },
+          "properties": {
+  
+          }
+        },
+        "geo_point_2d": {
+          "lon": 2.29982132902173,
+          "lat": 48.8713238078074
+        }
+      },
+      {
+        "num_emprise": "EC493119",
+        "cp_arrondissement": "75013",
+        "date_debut": "2026-03-04",
+        "date_fin": "2026-03-16",
+        "chantier_categorie": "Opérateurs de réseau (gaz-électricité-RATP-etc)",
+        "moa_principal": "ENEDIS",
+        "surface": 8.75,
+        "chantier_synthese": "Travaux sur réseau électrique",
+        "localisation_detail": [
+          "EMPRISE_TROTTOIR"
+        ],
+        "localisation_stationnement": null,
+        "demande_cite_id": "945161",
+        "chantier_cite_id": "320775",
+        "geo_shape": {
+          "type": "Feature",
+          "geometry": {
+            "coordinates": [
+              [
+                [2.36431902206649, 48.8428906435156],
+                [2.3643164805286, 48.842886873379],
+                [2.36425966688392, 48.8428783746923],
+                [2.36424035619982, 48.8428495833472],
+                [2.36421439927066, 48.8428566178033],
+                [2.36423474407821, 48.8428854137488],
+                [2.36425239893804, 48.8428803848129],
+                [2.36431902206649, 48.8428906435156]
+              ]
+            ],
+            "type": "Polygon"
+          },
+          "properties": {
+  
+          }
+        },
+        "geo_point_2d": {
+          "lon": 2.36424657764939,
+          "lat": 48.8428705474891
+        }
+      },
+      {
+        "num_emprise": "EC485753",
+        "cp_arrondissement": "75020",
+        "date_debut": "2026-02-18",
+        "date_fin": "2026-03-20",
+        "chantier_categorie": "Opérateurs de réseau (gaz-électricité-RATP-etc)",
+        "moa_principal": "GRDF",
+        "surface": 3.05,
+        "chantier_synthese": "Travaux sur réseau de gaz",
+        "localisation_detail": [
+          "EMPRISE_TROTTOIR"
+        ],
+        "localisation_stationnement": null,
+        "demande_cite_id": "939365",
+        "chantier_cite_id": "316142",
+        "geo_shape": {
+          "type": "Feature",
+          "geometry": {
+            "coordinates": [
+              [
+                [2.40662201169249, 48.8628319033085],
+                [2.40664063732277, 48.862825165159],
+                [2.40662701239734, 48.8628094445713],
+                [2.40660924767181, 48.8628164720785],
+                [2.40662201169249, 48.8628319033085]
+              ]
+            ],
+            "type": "Polygon"
+          },
+          "properties": {
+  
+          }
+        },
+        "geo_point_2d": {
+          "lon": 2.4066248007937,
+          "lat": 48.8628207623959
+        }
+      },
+      {
+        "num_emprise": "EC464157",
+        "cp_arrondissement": "75014",
+        "date_debut": "2025-10-26",
+        "date_fin": "2026-04-30",
+        "chantier_categorie": "Ville de Paris (Tvx sur espace ou édifice public)",
+        "moa_principal": "Ville de Paris (autres)",
+        "surface": 143.45,
+        "chantier_synthese": "Travaux sur édifice public (VdP*)",
+        "localisation_detail": [
+          "EMPRISE_CHAUSSEE",
+          "EMPRISE_TROTTOIR"
+        ],
+        "localisation_stationnement": null,
+        "demande_cite_id": "921398",
+        "chantier_cite_id": "301650",
+        "geo_shape": {
+          "type": "Feature",
+          "geometry": {
+            "coordinates": [
+              [
+                [2.33441593016484, 48.82952389539],
+                [2.33449242904393, 48.8293234691334],
+                [2.33440945675144, 48.8293106212047],
+                [2.33433332670907, 48.829511049465],
+                [2.33441593016484, 48.82952389539]
+              ]
+            ],
+            "type": "Polygon"
+          },
+          "properties": {
+  
+          }
+        },
+        "geo_point_2d": {
+          "lon": 2.3344128142701,
+          "lat": 48.8294171886709
+        }
+      },
+      {
+        "num_emprise": "EC369543",
+        "cp_arrondissement": "75001",
+        "date_debut": "2023-11-30",
+        "date_fin": "2026-12-31",
+        "chantier_categorie": "Ville de Paris (Tvx sur espace ou édifice public)",
+        "moa_principal": "Section de l'Assainissement de Paris",
+        "surface": 99.19,
+        "chantier_synthese": "Travaux sur réseau d’assainissement",
+        "localisation_detail": [
+          "EMPRISE_CHAUSSEE",
+          "EMPRISE_TROTTOIR"
+        ],
+        "localisation_stationnement": null,
+        "demande_cite_id": "848175",
+        "chantier_cite_id": "242276",
+        "geo_shape": {
+          "type": "Feature",
+          "geometry": {
+            "coordinates": [
+              [
+                [2.34300538864428, 48.8551656788006],
+                [2.3431069502741, 48.8552108622949],
+                [2.34324296293405, 48.8550959457766],
+                [2.34319413238702, 48.8550829276238],
+                [2.34300538864428, 48.8551656788006]
+              ]
+            ],
+            "type": "Polygon"
+          },
+          "properties": {
+  
+          }
+        },
+        "geo_point_2d": {
+          "lon": 2.34312620021564,
+          "lat": 48.8551460990829
+        }
+      }
+    ]
+  }
