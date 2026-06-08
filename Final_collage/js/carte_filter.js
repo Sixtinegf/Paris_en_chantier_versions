@@ -345,11 +345,13 @@ let idArr = selectedArr !== null
 // OVERLAYS ARRONDISSEMENTS
 // =========================
 
+// =========================
+// OVERLAYS ARRONDISSEMENTS
+// =========================
+
 if (!collageMapMode && idArr !== null) {
   drawOneOverlay(idArr);
 }
-
-
 
 // =========================
 // PHOTOS COLLAGE
