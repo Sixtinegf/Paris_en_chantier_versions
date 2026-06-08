@@ -160,14 +160,14 @@ function preload() {
   icon = loadImage("Pictogramme.png");
   iconRed = loadImage("Picto2.png");
  
-for (let i = 0; i < 359; i++) {
+//for (let i = 0; i < 359; i++) {
 
-  let num = nf(i, 5);
+ // let num = nf(i, 5);
 
- gifFrames15.push(
-    loadImage("gif15/15eme_" + num + ".png")
-  );
-}
+// gifFrames15.push(
+  //  loadImage("gif15/15eme_" + num + ".png")
+ // );
+//}
 
 for (let i = 0; i < 293; i++) {
 
