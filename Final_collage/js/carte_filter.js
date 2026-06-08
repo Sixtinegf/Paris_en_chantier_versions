@@ -345,15 +345,10 @@ let idArr = selectedArr !== null
 // OVERLAYS ARRONDISSEMENTS
 // =========================
 
-if (collageMapMode) {
-  const arrIdsWithPhotos = getArrIdsWithPhotos();
-
-  for (let arrId of arrIdsWithPhotos) {
-    drawOneOverlay(arrId);
-  }
-} else if (idArr !== null) {
+if (!collageMapMode && idArr !== null) {
   drawOneOverlay(idArr);
 }
+
 
 
 // =========================
