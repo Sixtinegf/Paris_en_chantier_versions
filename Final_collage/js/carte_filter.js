@@ -1198,14 +1198,79 @@ function getArrBounds(arr) {
 function markCollageDirty(arrId) {
   collageCacheDirty[Number(arrId)] = true;
 }
+
+function getNearbyPhotos(p, photoSize) {
+  const neighbors = [];
+
+  for (let other of studioPhotos) {
+    if (other === p) continue;
+    if (other.arrId !== p.arrId) continue;
+
+    const otherSize = 260 * (other.scale || 1);
+    const d = dist(p.x, p.y, other.x, other.y);
+    const threshold = (photoSize + otherSize) * 0.58;
+
+    if (d < threshold) {
+      neighbors.push(other);
+    }
+  }
+
+  return neighbors;
+}
+
+function drawCheapOrganicFragments(pg, sourceImg, photoSize, count = 3, alphaMin = 35, alphaMax = 60) {
+  if (!sourceImg) return;
+
+  for (let i = 0; i < count; i++) {
+    const sw = random(sourceImg.width * 0.18, sourceImg.width * 0.42);
+    const sh = random(sourceImg.height * 0.18, sourceImg.height * 0.42);
+
+    const sx = random(0, Math.max(1, sourceImg.width - sw));
+    const sy = random(0, Math.max(1, sourceImg.height - sh));
+
+    const dw = random(photoSize * 0.18, photoSize * 0.40);
+    const dh = dw * (sh / sw);
+
+    const dx = random(-photoSize * 0.22, photoSize * 0.22);
+    const dy = random(-photoSize * 0.22, photoSize * 0.22);
+
+    pg.push();
+    pg.translate(dx, dy);
+    pg.rotate(random(-0.12, 0.12));
+    pg.tint(255, random(alphaMin, alphaMax));
+    pg.image(sourceImg, 0, 0, dw, dh, sx, sy, sw, sh);
+    pg.pop();
+  }
+
+  pg.noTint();
+}
+
+function drawCheapNeighborBlend(pg, neighbors, photoSize, count = 1, alphaMin = 70, alphaMax = 120) {
+  if (!neighbors || !neighbors.length) return;
+
+  const passes = Math.min(count, neighbors.length);
+
+  for (let i = 0; i < passes; i++) {
+    const other = random(neighbors);
+    if (!other || !other.img) continue;
+
+    const dx = random(-photoSize * 0.12, photoSize * 0.12);
+    const dy = random(-photoSize * 0.12, photoSize * 0.12);
+    const scale = random(0.88, 1.04);
+
+    pg.tint(255, random(alphaMin, alphaMax));
+    pg.image(other.img, dx, dy, photoSize * scale, photoSize * scale);
+  }
+
+  pg.noTint();
+}
 function drawMixedPhoto(pg, p, photoSize, touching) {
   const ctx = pg.drawingContext;
-
   ctx.save();
 
-  // =====================
-  // CAS NORMAL
-  // =====================
+  // ---------------------
+  // PAS DE CHEVAUCHEMENT
+  // ---------------------
   if (!touching) {
     ctx.globalCompositeOperation = "source-over";
 
@@ -1213,8 +1278,8 @@ function drawMixedPhoto(pg, p, photoSize, touching) {
       pg.tint(255, p.opacity || 240);
       drawGlitchPhoto(pg, p.img, photoSize, p);
     } else {
-      pg.tint(255, p.opacity || 235);
-      pg.image(p.img, 0, 0, photoSize, photoSize);
+    pg.tint(255, 228);
+pg.image(p.img, 0, 0, photoSize, photoSize);
     }
 
     pg.noTint();
@@ -1222,59 +1287,54 @@ function drawMixedPhoto(pg, p, photoSize, touching) {
     return;
   }
 
-  // =====================
-  // CAS MÉLANGE
-  // =====================
+  // ---------------------
+  // CHEVAUCHEMENT
+  // ---------------------
+  const neighbors = getNearbyPhotos(p, photoSize);
+
+  // base commune : l'image reste lisible
+  ctx.globalCompositeOperation = "source-over";
+  pg.tint(255, 195);
+  pg.image(p.img, 0, 0, photoSize, photoSize);
 
   if (p.filterMode === "beton") {
-    // base très visible
+    // mélange plus mat / sale
     ctx.globalCompositeOperation = "multiply";
-    pg.tint(255, 215);
-    pg.image(p.img, 0, 0, photoSize, photoSize);
+    drawCheapNeighborBlend(pg, neighbors, photoSize, 1, 25, 45);
 
-    // matière / contraste
     ctx.globalCompositeOperation = "overlay";
-    pg.tint(255, 165);
-    pg.image(p.img, 0, 0, photoSize, photoSize);
+    drawCheapOrganicFragments(pg, p.img, photoSize, 3, 30, 50);
 
-    // petite repasse pleine pour garder la présence
     ctx.globalCompositeOperation = "source-over";
-    pg.tint(255, 120);
-    pg.image(p.img, 0, 0, photoSize, photoSize);
+    pg.tint(255, 60);
+    pg.image(p.img, 0, 0, photoSize * 0.98, photoSize * 0.98);
   }
 
   else if (p.filterMode === "chantier") {
-    // couche dense
-    ctx.globalCompositeOperation = "multiply";
-    pg.tint(255, 190);
-    pg.image(p.img, 0, 0, photoSize, photoSize);
-
-    // couleurs chantier qui fusionnent
+    // plus coloré, plus vif, mais sans trop charger
     ctx.globalCompositeOperation = "overlay";
-    pg.tint(255, 210);
-    pg.image(p.img, 0, 0, photoSize, photoSize);
+   drawCheapOrganicFragments(pg, p.img, photoSize, 8, 90, 150);
+    ctx.globalCompositeOperation = "multiply";
+    drawCheapNeighborBlend(pg, neighbors, photoSize, 3, 80, 130);
 
-    // légère lumière pour garder le jaune / rouge vif
     ctx.globalCompositeOperation = "screen";
-    pg.tint(255, 90);
-    pg.image(p.img, 0, 0, photoSize, photoSize);
-
-    // repasse légère mais visible
-    ctx.globalCompositeOperation = "source-over";
-    pg.tint(255, 85);
-    pg.image(p.img, 0, 0, photoSize, photoSize);
+    pg.tint(255, 40);
+    pg.image(p.img, random(-3, 3), random(-3, 3), photoSize, photoSize);
   }
 
   else if (p.filterMode === "fracture") {
     ctx.globalCompositeOperation = "hard-light";
-    pg.tint(255, 220);
+    pg.tint(255, 210);
     drawGlitchPhoto(pg, p.img, photoSize, p);
+
+    ctx.globalCompositeOperation = "overlay";
+    drawCheapOrganicFragments(pg, p.img, photoSize, 2, 25, 45);
   }
 
   else {
-    ctx.globalCompositeOperation = "source-over";
-    pg.tint(255, p.opacity || 235);
-    pg.image(p.img, 0, 0, photoSize, photoSize);
+    // mode neutre
+    ctx.globalCompositeOperation = "multiply";
+    drawCheapNeighborBlend(pg, neighbors, photoSize, 1, 25, 40);
   }
 
   pg.noTint();
@@ -1728,28 +1788,117 @@ function addRedOrangeBlocks(ctx, canvas) {
 // gris, poussière, matière
 // =========================
 
-function concreteDesaturate(ctx, canvas) {
+function concreteColorGrain(ctx, canvas, params = {}) {
+  const intensity = params.intensity ?? 1;
+
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   const data = imageData.data;
+
+  const saturation = 0.92;   // garde la couleur, juste un peu calmée
+  const contrast = 1.10;
+  const grainAmount = 18 * intensity;
 
   for (let i = 0; i < data.length; i += 4) {
     let r = data[i];
     let g = data[i + 1];
     let b = data[i + 2];
 
-    let lum = 0.299 * r + 0.587 * g + 0.114 * b;
+    const lum = 0.299 * r + 0.587 * g + 0.114 * b;
 
-    // Gris béton légèrement froid
-    r = lum * 0.95 + 18;
-    g = lum * 0.98 + 18;
-    b = lum * 1.05 + 22;
+    // on garde la couleur, on la désature juste un peu
+    r = lum + (r - lum) * saturation;
+    g = lum + (g - lum) * saturation;
+    b = lum + (b - lum) * saturation;
 
-    // Contraste sec
-    r = (r - 128) * 1.35 + 128;
-    g = (g - 128) * 1.35 + 128;
-    b = (b - 128) * 1.35 + 128;
+    // légère tonalité minérale froide
+    r += 2;
+    g += 3;
+    b += 6;
 
-    data[i] = clamp255(r);
+    // contraste léger
+    r = (r - 128) * contrast + 128;
+    g = (g - 128) * contrast + 128;
+    b = (b - 128) * contrast + 128;
+
+    // grain béton
+    const grain = (Math.random() - 0.5) * grainAmount;
+    r += grain;
+    g += grain;
+    b += grain;
+
+    data[i]     = clamp255(r);
+    data[i + 1] = clamp255(g);
+    data[i + 2] = clamp255(b);
+  }
+
+  ctx.putImageData(imageData, 0, 0);
+}
+
+function addConcreteGrainOverlay(ctx, canvas, params = {}) {
+  const intensity = params.intensity ?? 1;
+
+  ctx.save();
+
+  const dots = Math.floor(220 + 180 * intensity);
+
+  for (let i = 0; i < dots; i++) {
+    const x = Math.random() * canvas.width;
+    const y = Math.random() * canvas.height;
+    const s = 0.6 + Math.random() * 1.8;
+
+    ctx.fillStyle =
+      Math.random() > 0.5
+        ? "rgba(255,255,255,0.07)"
+        : "rgba(0,0,0,0.08)";
+
+    ctx.fillRect(x, y, s, s);
+  }
+
+  ctx.restore();
+}
+
+function boostVividColors(ctx, canvas, params = {}) {
+  const intensity = params.intensity ?? 1;
+
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imageData.data;
+
+  const vividBoost = 1.75 + 0.20 * intensity;
+  const softBoost = 1.05;
+  const contrast = 1.12;
+
+  for (let i = 0; i < data.length; i += 4) {
+    let r = data[i];
+    let g = data[i + 1];
+    let b = data[i + 2];
+
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const chroma = max - min;
+    const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+
+    // si la couleur est déjà vive, on l'accentue fortement
+    if (chroma > 45 && lum > 25 && lum < 235) {
+      r = lum + (r - lum) * vividBoost;
+      g = lum + (g - lum) * vividBoost;
+      b = lum + (b - lum) * vividBoost;
+
+      r *= 1.03;
+      g *= 1.03;
+      b *= 1.03;
+    } else {
+      // le reste reste presque naturel
+      r = lum + (r - lum) * softBoost;
+      g = lum + (g - lum) * softBoost;
+      b = lum + (b - lum) * softBoost;
+    }
+
+    // contraste léger
+    r = (r - 128) * contrast + 128;
+    g = (g - 128) * contrast + 128;
+    b = (b - 128) * contrast + 128;
+
+    data[i]     = clamp255(r);
     data[i + 1] = clamp255(g);
     data[i + 2] = clamp255(b);
   }
@@ -1758,31 +1907,38 @@ function concreteDesaturate(ctx, canvas) {
 }
 
 
-function addConcreteDust(ctx, canvas) {
+function addConcreteDustLite(ctx, canvas, params = {}) {
+  const intensity = params.intensity ?? 1;
+
   ctx.save();
 
-  for (let i = 0; i < 1400; i++) {
+  // beaucoup plus de points
+  const dots = Math.floor(1100 + 500 * intensity);
+
+  for (let i = 0; i < dots; i++) {
     const x = Math.random() * canvas.width;
     const y = Math.random() * canvas.height;
-    const s = Math.random() * 2.8;
+    const s = 0.5 + Math.random() * 2.6;
 
     ctx.fillStyle =
       Math.random() > 0.5
-        ? "rgba(255,255,255,0.12)"
-        : "rgba(0,0,0,0.12)";
+        ? "rgba(255,255,255,0.16)"
+        : "rgba(0,0,0,0.17)";
 
     ctx.fillRect(x, y, s, s);
   }
 
-  // grandes traces poussiéreuses
-  ctx.globalCompositeOperation = "screen";
-  ctx.fillStyle = "rgba(255,255,255,0.10)";
-
-  for (let i = 0; i < 12; i++) {
+  // poussières plus larges / taches béton
+  for (let i = 0; i < 30; i++) {
     const x = Math.random() * canvas.width;
     const y = Math.random() * canvas.height;
-    const w = 80 + Math.random() * 200;
-    const h = 12 + Math.random() * 45;
+    const w = 12 + Math.random() * 90;
+    const h = 6 + Math.random() * 32;
+
+    ctx.fillStyle =
+      Math.random() > 0.5
+        ? "rgba(255,255,255,0.07)"
+        : "rgba(0,0,0,0.08)";
 
     ctx.fillRect(x, y, w, h);
   }
@@ -2529,6 +2685,164 @@ function addLightDust(ctx, canvas, params = {}) {
 function randomRange(min, max) {
   return min + Math.random() * (max - min);
 }
+
+function concreteColorGrainLite(ctx, canvas, params = {}) {
+  const intensity = params.intensity ?? 1;
+
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imageData.data;
+
+  const saturation = 0.93;
+  const contrast = 1.14;
+  const grainAmount = 52 * intensity; // beaucoup plus fort
+
+  for (let i = 0; i < data.length; i += 4) {
+    let r = data[i];
+    let g = data[i + 1];
+    let b = data[i + 2];
+
+    const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+
+    // garder la couleur mais un peu calmée
+    r = lum + (r - lum) * saturation;
+    g = lum + (g - lum) * saturation;
+    b = lum + (b - lum) * saturation;
+
+    // légère teinte minérale
+    r += 3;
+    g += 4;
+    b += 8;
+
+    // contraste
+    r = (r - 128) * contrast + 128;
+    g = (g - 128) * contrast + 128;
+    b = (b - 128) * contrast + 128;
+
+    // gros grain visible
+    const grain = (Math.random() - 0.5) * grainAmount;
+    r += grain;
+    g += grain;
+    b += grain;
+
+    // petites cassures plus dures, effet béton rugueux
+    if (Math.random() > 0.82) {
+      const burst = (Math.random() - 0.5) * 70 * intensity;
+      r += burst;
+      g += burst;
+      b += burst;
+    }
+
+    data[i]     = clamp255(r);
+    data[i + 1] = clamp255(g);
+    data[i + 2] = clamp255(b);
+  }
+
+  ctx.putImageData(imageData, 0, 0);
+}
+
+function addConcreteSpeckle(ctx, canvas, params = {}) {
+  const intensity = params.intensity ?? 1;
+
+  ctx.save();
+
+  // petites lignes / accrocs
+  for (let i = 0; i < 180 * intensity; i++) {
+    const x = Math.random() * canvas.width;
+    const y = Math.random() * canvas.height;
+    const w = 1 + Math.random() * 4;
+    const h = 1 + Math.random() * 3;
+
+    ctx.fillStyle =
+      Math.random() > 0.5
+        ? "rgba(255,255,255,0.10)"
+        : "rgba(0,0,0,0.11)";
+
+    ctx.fillRect(x, y, w, h);
+  }
+
+  ctx.restore();
+}
+
+function addConcreteDustLite(ctx, canvas, params = {}) {
+  const intensity = params.intensity ?? 1;
+
+  ctx.save();
+
+  const dots = Math.floor(520 + 260 * intensity); // beaucoup plus de grain
+
+  for (let i = 0; i < dots; i++) {
+    const x = Math.random() * canvas.width;
+    const y = Math.random() * canvas.height;
+    const s = 0.6 + Math.random() * 2.2;
+
+    ctx.fillStyle =
+      Math.random() > 0.5
+        ? "rgba(255,255,255,0.13)"
+        : "rgba(0,0,0,0.14)";
+
+    ctx.fillRect(x, y, s, s);
+  }
+
+  // quelques poussières / plaques plus larges
+  for (let i = 0; i < 18; i++) {
+    const x = Math.random() * canvas.width;
+    const y = Math.random() * canvas.height;
+    const w = 18 + Math.random() * 70;
+    const h = 8 + Math.random() * 28;
+
+    ctx.fillStyle =
+      Math.random() > 0.5
+        ? "rgba(255,255,255,0.05)"
+        : "rgba(0,0,0,0.06)";
+
+    ctx.fillRect(x, y, w, h);
+  }
+
+  ctx.restore();
+}
+
+function boostVividColorsLite(ctx, canvas, params = {}) {
+  const intensity = params.intensity ?? 1;
+
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imageData.data;
+
+  const vividBoost = 1.55 + 0.18 * intensity;
+  const softBoost = 1.04;
+  const contrast = 1.10;
+
+  for (let i = 0; i < data.length; i += 4) {
+    let r = data[i];
+    let g = data[i + 1];
+    let b = data[i + 2];
+
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const chroma = max - min;
+    const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+
+    // booste toutes les couleurs vives, pas seulement jaune/rouge
+    if (chroma > 40 && lum > 20 && lum < 235) {
+      r = lum + (r - lum) * vividBoost;
+      g = lum + (g - lum) * vividBoost;
+      b = lum + (b - lum) * vividBoost;
+    } else {
+      r = lum + (r - lum) * softBoost;
+      g = lum + (g - lum) * softBoost;
+      b = lum + (b - lum) * softBoost;
+    }
+
+    r = (r - 128) * contrast + 128;
+    g = (g - 128) * contrast + 128;
+    b = (b - 128) * contrast + 128;
+
+    data[i]     = clamp255(r);
+    data[i + 1] = clamp255(g);
+    data[i + 2] = clamp255(b);
+  }
+
+  ctx.putImageData(imageData, 0, 0);
+}
 function createFilteredPhotoGraphic(sourceImg, modes = []) {
 
   const targetSize = 420;
@@ -2571,40 +2885,49 @@ function createFilteredPhotoGraphic(sourceImg, modes = []) {
     willReadFrequently: true
   });
 
-  // 1. Béton d'abord : matière
-  if (hasBeton) {
-    concreteBaseTone(ctx, canvas);
-    textureConcrete(ctx, canvas, {
-      intensity: hasChantier ? 0.95 : 1.2
-    });
-    addConcreteClouds(ctx, canvas, {
-      intensity: hasChantier ? 0.7 : 1.1
-    });
-    addScratches(ctx, canvas);
-    addDirtyVignette(ctx, canvas);
+  // 1. Béton : garder la couleur + donner une matière minérale
+if (hasBeton) {
+  concreteColorGrainLite(ctx, canvas, {
+    intensity: hasChantier ? 1.4 : 1.7
+  });
 
-    // Faible érosion : matière, pas transparence
-    erodeConcreteAlpha(ctx, canvas, 0.25);
-  }
+  addConcreteDustLite(ctx, canvas, {
+    intensity: hasChantier ? 1.35 : 1.7
+  });
 
-  // 2. Chantier ensuite : couleur / saleté
+  addConcreteSpeckle(ctx, canvas, {
+    intensity: hasChantier ? 1.0 : 1.3
+  });
+
+  addConcreteClouds(ctx, canvas, {
+    intensity: hasChantier ? 0.7 : 1.0
+  });
+
+  addScratches(ctx, canvas);
+
+  erodeConcreteAlpha(ctx, canvas, 0.08);
+}
+
+  // 2. Chantier : booster toutes les couleurs vives
   if (hasChantier) {
-    constructionColorPunch(ctx, canvas, {
-      intensity: hasBeton ? 1.15 : 1.35
+    boostVividColorsLite(ctx, canvas, {
+      intensity: hasBeton ? 1.0 : 1.2
     });
-    addConstructionMud(ctx, canvas, { intensity: 1.0 });
-    addConstructionPaintBlocks(ctx, canvas, {
-      intensity: hasBeton ? 0.75 : 1.0
-    });
-    addLightDust(ctx, canvas, { intensity: 0.75 });
 
-    // Très faible érosion
+    addSmallWorksiteMarks(ctx, canvas, {
+      intensity: hasBeton ? 0.45 : 0.65
+    });
+
+    addLightDust(ctx, canvas, {
+      intensity: hasBeton ? 0.55 : 0.75
+    });
+
     if (typeof applyChantierAlphaMask === "function") {
-      applyChantierAlphaMask(ctx, canvas, { intensity: 0.18 });
+      applyChantierAlphaMask(ctx, canvas, { intensity: 0.12 });
     }
   }
 
-  // 3. Fracture à la fin : casse le résultat final
+  // 3. Fracture à la fin
   if (hasFracture) {
     fractureSlices(ctx, canvas);
     addCrackLines(ctx, canvas);
