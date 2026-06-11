@@ -169,23 +169,23 @@ function preload() {
  // );
 //}
 
-for (let i = 0; i < 293; i++) {
+//for (let i = 0; i < 293; i++) {
 
-  let num = nf(i, 5);
+  //let num = nf(i, 5);
 
- gifFrames16.push(
-   loadImage("gif16/16_gif_" + num + ".png")
-);
-}
+// gifFrames16.push(
+  // loadImage("gif16/16_gif_" + num + ".png")
+//);
+//}
 
-for (let i = 0; i < 359; i++) {
+//for (let i = 0; i < 359; i++) {
 
-  let num = nf(i, 5);
+ // let num = nf(i, 5);
 
-  gifFrames7.push(
-    loadImage("gif7/chantier_7eme_" + num + ".png")
-  );
-}
+ // gifFrames7.push(
+    //loadImage("gif7/chantier_7eme_" + num + ".png")
+  //);
+//}
 
 //for (let i = 0; i < 127; i++) {
 
