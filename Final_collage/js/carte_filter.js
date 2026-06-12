@@ -1140,23 +1140,183 @@ function clamp255(v) {
 }
 
 function isPhotoTouchingAnother(p, idArr, photoSize) {
+  const a = getPhotoBox(p, photoSize);
+
   for (let other of studioPhotos) {
     if (other === p) continue;
     if (other.arrId !== idArr) continue;
 
     const otherSize = 260 * (other.scale || 1);
+    const b = getPhotoBox(other, otherSize);
 
-    const d = dist(p.x, p.y, other.x, other.y);
-
-    // seuil volontairement généreux pour déclencher le mélange
-    const threshold = (photoSize + otherSize) * 0.54;
-
-    if (d < threshold) {
+    if (boxesOverlap(a, b)) {
       return true;
     }
   }
 
   return false;
+}
+
+function getPhotoBox(p, size) {
+  return {
+    left: p.x - size / 2,
+    right: p.x + size / 2,
+    top: p.y - size / 2,
+    bottom: p.y + size / 2
+  };
+}
+
+function boxesOverlap(a, b) {
+  return (
+    a.left < b.right &&
+    a.right > b.left &&
+    a.top < b.bottom &&
+    a.bottom > b.top
+  );
+}
+
+function getPhotoBox(p, size) {
+  return {
+    left: p.x - size / 2,
+    right: p.x + size / 2,
+    top: p.y - size / 2,
+    bottom: p.y + size / 2
+  };
+}
+
+function getBoxIntersection(a, b) {
+  const left = Math.max(a.left, b.left);
+  const right = Math.min(a.right, b.right);
+  const top = Math.max(a.top, b.top);
+  const bottom = Math.min(a.bottom, b.bottom);
+
+  if (right <= left || bottom <= top) {
+    return null;
+  }
+
+  return {
+    left,
+    right,
+    top,
+    bottom,
+    width: right - left,
+    height: bottom - top
+  };
+}
+
+function getOverlappingPhotos(p, photoSize) {
+  const overlaps = [];
+  const a = getPhotoBox(p, photoSize);
+
+  for (let other of studioPhotos) {
+    if (other === p) continue;
+    if (other.arrId !== p.arrId) continue;
+
+    const otherSize = 260 * (other.scale || 1);
+    const b = getPhotoBox(other, otherSize);
+
+    const intersection = getBoxIntersection(a, b);
+
+    if (intersection) {
+      overlaps.push({
+        photo: other,
+        intersection
+      });
+    }
+  }
+
+  return overlaps;
+}
+
+function drawBlendOnlyOnOverlap(pg, p, photoSize, overlaps, alphaMin = 110, alphaMax = 170) {
+  const ctx = pg.drawingContext;
+
+  for (let item of overlaps) {
+    const other = item.photo;
+    const inter = item.intersection;
+
+    if (!other || !other.img || !inter) continue;
+
+    // On convertit la zone d'intersection globale
+    // en coordonnées locales de la photo actuellement dessinée.
+    const localX = inter.left - p.x;
+    const localY = inter.top - p.y;
+
+    ctx.save();
+
+    // Clip : le blend ne s'affiche QUE dans la zone commune
+    ctx.beginPath();
+    ctx.rect(
+      localX,
+      localY,
+      inter.width,
+      inter.height
+    );
+    ctx.clip();
+
+    ctx.globalCompositeOperation = "multiply";
+
+    pg.tint(255, random(alphaMin, alphaMax));
+
+    // On redessine l'autre image, mais seulement visible dans le clip
+    const dx = other.x - p.x;
+    const dy = other.y - p.y;
+    const otherSize = 260 * (other.scale || 1);
+
+    pg.push();
+    pg.translate(dx, dy);
+    pg.rotate((other.rot || 0) - (p.rot || 0));
+
+    pg.image(
+      other.img,
+      0,
+      0,
+      otherSize,
+      otherSize
+    );
+
+    pg.pop();
+
+    pg.noTint();
+    ctx.restore();
+  }
+}
+
+function drawOverlapTexture(pg, p, overlaps, alphaMin = 50, alphaMax = 90) {
+  const ctx = pg.drawingContext;
+
+  for (let item of overlaps) {
+    const inter = item.intersection;
+    if (!inter) continue;
+
+    const localX = inter.left - p.x;
+    const localY = inter.top - p.y;
+
+    ctx.save();
+
+    ctx.beginPath();
+    ctx.rect(localX, localY, inter.width, inter.height);
+    ctx.clip();
+
+    pg.noStroke();
+
+    const dots = 18;
+
+    for (let i = 0; i < dots; i++) {
+      const x = localX + random(0, inter.width);
+      const y = localY + random(0, inter.height);
+      const s = random(1, 4);
+
+      pg.fill(
+        random() > 0.5 ? 255 : 0,
+        random(alphaMin, alphaMax)
+      );
+
+      pg.rect(x, y, s, s);
+    }
+
+    ctx.restore();
+  }
 }
 
 function prepareArrondissementMasks() {
@@ -1201,16 +1361,16 @@ function markCollageDirty(arrId) {
 
 function getNearbyPhotos(p, photoSize) {
   const neighbors = [];
+  const a = getPhotoBox(p, photoSize);
 
   for (let other of studioPhotos) {
     if (other === p) continue;
     if (other.arrId !== p.arrId) continue;
 
     const otherSize = 260 * (other.scale || 1);
-    const d = dist(p.x, p.y, other.x, other.y);
-    const threshold = (photoSize + otherSize) * 0.58;
+    const b = getPhotoBox(other, otherSize);
 
-    if (d < threshold) {
+    if (boxesOverlap(a, b)) {
       neighbors.push(other);
     }
   }
@@ -1268,18 +1428,21 @@ function drawMixedPhoto(pg, p, photoSize, touching) {
   const ctx = pg.drawingContext;
   ctx.save();
 
+  const overlaps = getOverlappingPhotos(p, photoSize);
+  const hasRealOverlap = overlaps.length > 0;
+
   // ---------------------
-  // PAS DE CHEVAUCHEMENT
+  // PAS DE VRAIE SUPERPOSITION
   // ---------------------
-  if (!touching) {
+  if (!hasRealOverlap) {
     ctx.globalCompositeOperation = "source-over";
 
     if (p.filterMode === "fracture") {
       pg.tint(255, p.opacity || 240);
       drawGlitchPhoto(pg, p.img, photoSize, p);
     } else {
-    pg.tint(255, 228);
-pg.image(p.img, 0, 0, photoSize, photoSize);
+      pg.tint(255, 228);
+      pg.image(p.img, 0, 0, photoSize, photoSize);
     }
 
     pg.noTint();
@@ -1288,53 +1451,39 @@ pg.image(p.img, 0, 0, photoSize, photoSize);
   }
 
   // ---------------------
-  // CHEVAUCHEMENT
+  // IMAGE DE BASE
   // ---------------------
-  const neighbors = getNearbyPhotos(p, photoSize);
-
-  // base commune : l'image reste lisible
   ctx.globalCompositeOperation = "source-over";
-  pg.tint(255, 195);
+  pg.tint(255, 235);
   pg.image(p.img, 0, 0, photoSize, photoSize);
 
+  // ---------------------
+  // MÉLANGE UNIQUEMENT SUR LES ZONES SUPERPOSÉES
+  // ---------------------
   if (p.filterMode === "beton") {
-    // mélange plus mat / sale
     ctx.globalCompositeOperation = "multiply";
-    drawCheapNeighborBlend(pg, neighbors, photoSize, 1, 25, 45);
+    drawBlendOnlyOnOverlap(pg, p, photoSize, overlaps, 120, 180);
 
     ctx.globalCompositeOperation = "overlay";
-    drawCheapOrganicFragments(pg, p.img, photoSize, 3, 30, 50);
-
-    ctx.globalCompositeOperation = "source-over";
-    pg.tint(255, 60);
-    pg.image(p.img, 0, 0, photoSize * 0.98, photoSize * 0.98);
+    drawOverlapTexture(pg, p, overlaps, 55, 95);
   }
 
   else if (p.filterMode === "chantier") {
-    // plus coloré, plus vif, mais sans trop charger
-    ctx.globalCompositeOperation = "overlay";
-   drawCheapOrganicFragments(pg, p.img, photoSize, 8, 90, 150);
     ctx.globalCompositeOperation = "multiply";
-    drawCheapNeighborBlend(pg, neighbors, photoSize, 3, 80, 130);
+    drawBlendOnlyOnOverlap(pg, p, photoSize, overlaps, 130, 190);
 
-    ctx.globalCompositeOperation = "screen";
-    pg.tint(255, 40);
-    pg.image(p.img, random(-3, 3), random(-3, 3), photoSize, photoSize);
+    ctx.globalCompositeOperation = "overlay";
+    drawOverlapTexture(pg, p, overlaps, 80, 140);
   }
 
   else if (p.filterMode === "fracture") {
     ctx.globalCompositeOperation = "hard-light";
-    pg.tint(255, 210);
-    drawGlitchPhoto(pg, p.img, photoSize, p);
-
-    ctx.globalCompositeOperation = "overlay";
-    drawCheapOrganicFragments(pg, p.img, photoSize, 2, 25, 45);
+    drawBlendOnlyOnOverlap(pg, p, photoSize, overlaps, 120, 175);
   }
 
   else {
-    // mode neutre
     ctx.globalCompositeOperation = "multiply";
-    drawCheapNeighborBlend(pg, neighbors, photoSize, 1, 25, 40);
+    drawBlendOnlyOnOverlap(pg, p, photoSize, overlaps, 110, 160);
   }
 
   pg.noTint();
