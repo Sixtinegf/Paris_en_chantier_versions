@@ -35,9 +35,13 @@ body {
 .screen-view {
   display: flex;
   flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
   gap: 120px;
 
-  padding: 80px;
+  min-height: 100vh;
+
+  padding: 100px 10vw 80px 10vw;
 
   overflow-x: auto;
   overflow-y: hidden;
@@ -64,7 +68,7 @@ body {
 
   text-align: center;
 
-  margin: 40px 0 20px 0;
+  margin: 40px 0 35px 0;
   line-height: 0.9;
 }
 
@@ -163,15 +167,19 @@ body {
 /* ===== NAV ===== */
 
 .nav {
-  position: fixed;
+  position: static !important;
 
-  top: 20px;
-  left: 20px;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 16px !important;
 
-  z-index: 1000;
+  width: 100% !important;
 
-  display: flex;
-  gap: 10px;
+  margin: 0 auto 50px auto !important;
+  padding: 0 20px !important;
+
+  z-index: 1 !important;
 }
 
 /* ===== BUTTONS ===== */
@@ -197,15 +205,14 @@ button {
     color 0.15s ease,
     transform 0.12s ease;
 
-  margin-right: 10px;
+  margin: 0px;
 }
 
 button:hover {
-
   background: black;
   color: white;
 
-  transform: translateY(-2px);
+  transform: none;
 }
 
 /* ===== GALLERY ===== */
@@ -232,18 +239,17 @@ button:hover {
 }
 
 #filters-panel {
-
   display: grid;
 
-  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  grid-template-columns: repeat(3, minmax(180px, 1fr));
 
-  gap: 20px;
+  gap: 14px;
 
-  margin-top: 80px;
+  margin: 60px auto 0 auto;
 
-  padding: 30px;
+  padding: 20px 30px;
 
-  max-width: 700px;
+  max-width: 900px;
 }
 
 .filter-block {
@@ -259,20 +265,7 @@ button:hover {
 
   gap: 8px;
 }
-#filters-panel {
 
-  display: grid;
-
-  grid-template-columns: repeat(3, minmax(180px, 1fr));
-
-  gap: 14px;
-
-  margin-top: 60px;
-
-  padding: 20px 30px;
-
-  max-width: 900px;
-}
 
 .filter-block label {
 
@@ -333,3 +326,91 @@ button:hover {
     display: none;
   }
 }
+
+/* =========================
+   CENTRAGE FINAL PROPRE
+========================= */
+
+/* Fanzine centré avec marge gauche/droite */
+.screen-view {
+  width: 100vw !important;
+
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+
+  gap: 120px !important;
+
+  min-height: 100vh !important;
+
+  padding: 100px 7.5vw 80px 7.5vw !important;
+
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+
+  scroll-snap-type: x mandatory !important;
+}
+
+/* Taille du fanzine inchangée */
+.spread {
+  flex: 0 0 85vw !important;
+  max-width: 1400px !important;
+}
+
+/* Marges visuelles gauche/droite dans le scroll */
+.screen-view::before,
+.screen-view::after {
+  content: "";
+  flex: 0 0 0;
+}
+
+/* Barre de boutons centrée */
+/* Barre de boutons centrée SOUS le titre */
+.nav {
+  position: static !important;
+
+  width: 100% !important;
+
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+
+  gap: 16px !important;
+
+  margin: 0 auto 50px auto !important;
+  padding: 0 20px !important;
+
+  flex-wrap: nowrap !important;
+
+  pointer-events: auto !important;
+
+  transform: none !important;
+}
+
+/* Boutons stables */
+.nav button,
+button {
+  margin: 0 !important;
+
+  transform: none !important;
+  transition: none !important;
+
+  white-space: nowrap !important;
+
+  background: white !important;
+  color: black !important;
+
+  border: 1px solid black !important;
+
+  cursor: pointer !important;
+}
+
+/* Hover noir conservé, sans mouvement */
+.nav button:hover,
+button:hover {
+  background: black !important;
+  color: white !important;
+
+  transform: none !important;
+}
+
