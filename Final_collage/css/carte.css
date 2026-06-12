@@ -6,9 +6,17 @@
 #ui-bar,
 .bottom-nav,
 #backBtn,
-#resetMapBtn {
+#resetMapBtn,
+#topRightControls,
+#resetCollageBtn,
+#collageControls,
+#collageControls .collageBtn,
+.cartoTitle,
+.cartoFilter,
+.cartoFilter input {
   font-family: monospace;
 }
+
 
 /* =========================
    LEFT PANEL (filters)
@@ -49,7 +57,6 @@
 
   z-index: 10001;
 }
-
 .ui-title {
   font-family: Impact, sans-serif;
 
@@ -76,6 +83,13 @@
   gap: 8px;
 
   margin: 0;
+}
+
+.cartoFilter {
+  font-family: monospace;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .ui-section {
@@ -230,29 +244,37 @@
   justify-content: space-between;
 }
 
-#photoPanel{
+#photoPanel {
+  position: absolute;
 
-  position:absolute;
+  top: 70px;
+  right: 20px;
 
-  top:20px;
-  right:20px;
+  width: 300px;
+  height: calc(80vh - 70px);
 
-  width:300px;
-  height:80vh;
+  overflow-y: auto;
 
-  overflow-y:auto;
+  background: white;
 
-  background:white;
+  border: 1px solid black;
 
-  border:1px solid black;
+  padding: 10px;
 
-  padding:10px;
+  z-index: 9999;
 
-  z-index:9999;
-
-  display:none;
+  display: none;
 }
-
+#photoPanel .cartoTitle,
+#photoPanel h2,
+#photoPanel h3 {
+  font-size: 16px;
+  text-align: center;
+  margin: 0 0 12px 0;
+  font-family: Impact, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
 #photoGallery img{
 
   width:100%;
@@ -275,6 +297,7 @@
 
 .cartoFilter input {
   cursor: pointer;
+  font-family: monospace;
 }
 
 #photoGallery {
@@ -308,16 +331,17 @@
   flex-direction: column;
   gap: 8px;
 
-  margin-bottom: 14px;
-  padding-bottom: 12px;
+  margin-bottom: 12px;
+  padding-bottom: 0;
 
-  border-bottom: 1px solid black;
+  border-bottom: none;
 }
 
 #collageControls .collageBtn {
   font-family: monospace;
+  font-size: 12px;
 
-  padding: 10px 14px;
+  padding: 8px 10px;
 
   border: 1px solid black;
 
@@ -328,8 +352,7 @@
 
   text-align: left;
   text-transform: uppercase;
-
-  font-size: 12px;
+  letter-spacing: 0.04em;
 }
 
 #collageControls .collageBtn:hover {
