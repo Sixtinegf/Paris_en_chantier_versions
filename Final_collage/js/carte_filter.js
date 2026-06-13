@@ -33,6 +33,7 @@ let collageCache = {};
 let collageCacheDirty = {};
 let arrondissementMasks = {};
 let arrondissementBounds = {};
+let filteredPhotoCache = new Map();
 
 
 let draggedFilterModesSnapshot = [];
@@ -41,6 +42,8 @@ let arrIdsWithPhotosDirty = true;
 let collageRebuildQueue = [];
 let isRebuildingCollage = false;
 let isDraggingPlacedPhoto = false;
+let liveCollagePhotos = [];
+let collageRebuildDelayTimer = null;
 
 let timelineCursorEl;
 let timelineProgressEl;
@@ -585,6 +588,14 @@ function resetCollages() {
   arrIdsWithPhotosDirty = true;
   collageRebuildQueue = [];
   isRebuildingCollage = false;
+  liveCollagePhotos = [];
+
+  if (collageRebuildDelayTimer) {
+    clearTimeout(collageRebuildDelayTimer);
+    collageRebuildDelayTimer = null;
+  }
+
+  filteredPhotoCache.clear();
 
   console.log("Collages reset");
 }
@@ -966,10 +977,18 @@ const releasedFilterModes = [...draggedFilterModesSnapshot];
   // 6. Fonction commune pour ajouter la photo au collage
  function addPhotoToCollage(sourceImg) {
 
-  const filteredImg = createFilteredPhotoGraphic(
-   sourceImg,
-releasedFilterModes
+ const filterKey = releasedPhotoUrl + "|" + releasedFilterModes.join("+");
+
+let filteredImg = filteredPhotoCache.get(filterKey);
+
+if (!filteredImg) {
+  filteredImg = createFilteredPhotoGraphic(
+    sourceImg,
+    releasedFilterModes
   );
+
+  filteredPhotoCache.set(filterKey, filteredImg);
+}
 
   const mixPresets = {
     none: {
@@ -1001,33 +1020,40 @@ releasedFilterModes
   const mainMode = getMainCollageMode(releasedFilterModes);
   const preset = mixPresets[mainMode] || mixPresets.none;
 
-  studioPhotos.push({
-    id: crypto.randomUUID(),
-    img: filteredImg,
-    originalImg: sourceImg,
+  const newPhoto = {
+  id: crypto.randomUUID(),
+  img: filteredImg,
+  originalImg: sourceImg,
 
-    arrId: targetArrId,
-    x: mx,
-    y: my,
+  arrId: targetArrId,
+  x: mx,
+  y: my,
 
-    scale: random(1.3, 1.8),
-    rot: random(-0.18, 0.18),
+  scale: random(1.3, 1.8),
+  rot: random(-0.18, 0.18),
 
-    opacity: preset.baseOpacity,
-    blendMode: preset.blendMode,
-    blendOpacity: preset.blendOpacity,
-    edgeSoftness: preset.edgeSoftness,
+  opacity: preset.baseOpacity,
+  blendMode: preset.blendMode,
+  blendOpacity: preset.blendOpacity,
+  edgeSoftness: preset.edgeSoftness,
 
-    glitch: random(2, 6),
-    filterMode: mainMode,
-    filterModes: [...releasedFilterModes],
+  glitch: random(2, 6),
+  filterMode: mainMode,
+  filterModes: [...releasedFilterModes],
 
-    dragging: false,
-    pinned: true
-  });
+  dragging: false,
+  pinned: true
+};
 
-  arrIdsWithPhotosDirty = true;
-  markCollageDirty(targetArrId);
+studioPhotos.push(newPhoto);
+
+// La photo est visible immédiatement, sans attendre le cache
+liveCollagePhotos.push(newPhoto);
+
+arrIdsWithPhotosDirty = true;
+
+// On reconstruit le cache plus tard, pas instantanément
+scheduleCollageRebuild(targetArrId);
 }
 
   // 7. Ajouter l'image, soit depuis l'image déjà chargée, soit via loadImage
@@ -1047,6 +1073,26 @@ if (draggedImageData) {
  
 draggedFilterModesSnapshot = [];
 isDraggingPlacedPhoto = false;
+}
+
+function scheduleCollageRebuild(arrId) {
+  arrId = Number(arrId);
+
+  collageCacheDirty[arrId] = true;
+
+  if (collageRebuildDelayTimer) {
+    clearTimeout(collageRebuildDelayTimer);
+  }
+
+  collageRebuildDelayTimer = setTimeout(() => {
+    rebuildCollageCacheForArr(arrId);
+    collageCacheDirty[arrId] = false;
+
+    // Une fois le cache reconstruit, les photos live sont déjà intégrées dedans
+    liveCollagePhotos = liveCollagePhotos.filter(p => Number(p.arrId) !== arrId);
+
+    collageRebuildDelayTimer = null;
+  }, 200);
 }
 class PhotoLayerItem {
   constructor(img, x, y) {
@@ -1743,7 +1789,6 @@ function overlayConstructionLines(ctx, canvas, params) {
 
   ctx.restore();
 }
-
 function drawCollageForArr(arrId) {
   arrId = Number(arrId);
 
@@ -1766,10 +1811,6 @@ function drawCollageForArr(arrId) {
       h
     };
 
-    collageCacheDirty[arrId] = true;
-  }
-
-  if (collageCacheDirty[arrId]) {
     rebuildCollageCacheForArr(arrId);
     collageCacheDirty[arrId] = false;
   }
@@ -1778,6 +1819,55 @@ function drawCollageForArr(arrId) {
 
   if (cache) {
     image(cache.g, cache.x, cache.y);
+  }
+
+  drawLiveCollagePhotosForArr(arrId);
+}
+
+function drawLiveCollagePhotosForArr(arrId) {
+  arrId = Number(arrId);
+
+  const livePhotos = liveCollagePhotos.filter(p => Number(p.arrId) === arrId);
+  if (!livePhotos.length) return;
+
+  for (let p of livePhotos) {
+    if (!p.img) continue;
+
+    push();
+
+    imageMode(CENTER);
+    translate(p.x, p.y);
+    rotate(p.rot || 0);
+
+    const photoSize = 260 * (p.scale || 1);
+
+    if (p.filterMode === "fracture") {
+      const glitch = p.glitch ?? 6;
+      const opacity = p.opacity ?? 245;
+
+      tint(255, 90, 20, 90);
+      image(p.img, -glitch, 0, photoSize, photoSize);
+
+      tint(20, 220, 255, 70);
+      image(p.img, glitch, 0, photoSize, photoSize);
+
+      tint(255, opacity);
+      image(p.img, 0, 0, photoSize, photoSize);
+
+      noTint();
+    } else {
+      tint(255, p.opacity || 235);
+      image(p.img, 0, 0, photoSize, photoSize);
+      noTint();
+    }
+
+    noFill();
+    stroke(255, 120);
+    strokeWeight(1.2);
+    rectMode(CENTER);
+    rect(0, 0, photoSize, photoSize);
+
+    pop();
   }
 }
 
