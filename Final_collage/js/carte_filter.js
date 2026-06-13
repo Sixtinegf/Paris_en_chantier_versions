@@ -34,11 +34,13 @@ let collageCacheDirty = {};
 let arrondissementMasks = {};
 let arrondissementBounds = {};
 
-let draggedFilteredImageData = null;
+
 let draggedFilterModesSnapshot = [];
-let filteredPhotoCache = new Map();
 let arrIdsWithPhotosCache = [];
 let arrIdsWithPhotosDirty = true;
+let collageRebuildQueue = [];
+let isRebuildingCollage = false;
+let isDraggingPlacedPhoto = false;
 
 let timelineCursorEl;
 let timelineProgressEl;
@@ -134,6 +136,7 @@ function preload() {
 }
 
 function setup() {
+  frameRate(30);
   pg = createGraphics(img.width, img.height);
   let cnv = createCanvas(windowWidth, windowHeight);
   cnv.parent("canvas-container");
@@ -340,10 +343,12 @@ let my = (mouseY - offsetY) / scaleFactor;
 // =========================
 let activeArr = null;
 
-for (let arr of data1) {
-  if (pointInArrondissement(mx, my, arr)) {
-    activeArr = arr;
-    break;
+if (!collageMapMode) {
+  for (let arr of data1) {
+    if (pointInArrondissement(mx, my, arr)) {
+      activeArr = arr;
+      break;
+    }
   }
 }
 
@@ -518,6 +523,7 @@ if (draggedImageData) {
 
   let debugDate = new Date(currentTime);
   text(debugDate.toLocaleDateString(), 20, height - 20);
+  //processCollageRebuildQueue();
 }
 
 // ===== INTERACTIONS =====
@@ -561,24 +567,24 @@ function mouseDragged() {
 
   for (let p of studioPhotos) {
     if (p.dragging) {
-  p.x = mx - p.offsetX;
-  p.y = my - p.offsetY;
-  
-  return;
-}
+      p.x = mx - p.offsetX;
+      p.y = my - p.offsetY;
+      isDraggingPlacedPhoto = true;
+      return;
+    }
   }
 
   offsetX += movedX;
   offsetY += movedY;
 }
-
 function resetCollages() {
   studioPhotos = [];
   collageCache = {};
   collageCacheDirty = {};
   arrIdsWithPhotosCache = [];
   arrIdsWithPhotosDirty = true;
-  filteredPhotoCache.clear();
+  collageRebuildQueue = [];
+  isRebuildingCollage = false;
 
   console.log("Collages reset");
 }
@@ -824,31 +830,12 @@ imgEl.addEventListener("pointerdown", (e) => {
   draggedPhotoUrl = photo.url;
   draggedPhotoArrId = Number(arrId);
   draggedImageData = null;
-  draggedFilteredImageData = null;
   draggedFilterModesSnapshot = [...collageFilterModes];
 
   uiDragging = true;
 
   loadImage(photo.url, (loadedImg) => {
     draggedImageData = loadedImg;
-
-    const cacheKey = photo.url + "|" + draggedFilterModesSnapshot.join("+");
-
-    if (filteredPhotoCache.has(cacheKey)) {
-      draggedFilteredImageData = filteredPhotoCache.get(cacheKey);
-      return;
-    }
-
-    // Le filtre est préparé pendant le drag, pas au drop
-    setTimeout(() => {
-      const filtered = createFilteredPhotoGraphic(
-        loadedImg,
-        draggedFilterModesSnapshot
-      );
-
-      filteredPhotoCache.set(cacheKey, filtered);
-      draggedFilteredImageData = filtered;
-    }, 0);
   });
 });
 
@@ -973,96 +960,93 @@ if (movedArrId !== null) {
 
   let targetArrId = Number(targetArr.c_ar);
 
+  const releasedPhotoUrl = draggedPhotoUrl;
+const releasedFilterModes = [...draggedFilterModesSnapshot];
+
   // 6. Fonction commune pour ajouter la photo au collage
-  function addPhotoToCollage(sourceImg) {
+ function addPhotoToCollage(sourceImg) {
 
-  const cacheKey = draggedPhotoUrl + "|" + draggedFilterModesSnapshot.join("+");
-
-let filteredImg = draggedFilteredImageData || filteredPhotoCache.get(cacheKey);
-
-if (!filteredImg) {
-  filteredImg = createFilteredPhotoGraphic(
-    sourceImg,
-    draggedFilterModesSnapshot
+  const filteredImg = createFilteredPhotoGraphic(
+   sourceImg,
+releasedFilterModes
   );
 
-  filteredPhotoCache.set(cacheKey, filteredImg);
+  const mixPresets = {
+    none: {
+      blendMode: "source-over",
+      blendOpacity: 240,
+      baseOpacity: 245,
+      edgeSoftness: 22
+    },
+    beton: {
+      blendMode: "multiply",
+      blendOpacity: 220,
+      baseOpacity: 240,
+      edgeSoftness: 24
+    },
+    chantier: {
+      blendMode: "overlay",
+      blendOpacity: 225,
+      baseOpacity: 242,
+      edgeSoftness: 22
+    },
+    fracture: {
+      blendMode: "hard-light",
+      blendOpacity: 215,
+      baseOpacity: 235,
+      edgeSoftness: 24
+    }
+  };
+
+  const mainMode = getMainCollageMode(releasedFilterModes);
+  const preset = mixPresets[mainMode] || mixPresets.none;
+
+  studioPhotos.push({
+    id: crypto.randomUUID(),
+    img: filteredImg,
+    originalImg: sourceImg,
+
+    arrId: targetArrId,
+    x: mx,
+    y: my,
+
+    scale: random(1.3, 1.8),
+    rot: random(-0.18, 0.18),
+
+    opacity: preset.baseOpacity,
+    blendMode: preset.blendMode,
+    blendOpacity: preset.blendOpacity,
+    edgeSoftness: preset.edgeSoftness,
+
+    glitch: random(2, 6),
+    filterMode: mainMode,
+    filterModes: [...releasedFilterModes],
+
+    dragging: false,
+    pinned: true
+  });
+
+  arrIdsWithPhotosDirty = true;
+  markCollageDirty(targetArrId);
 }
 
-   const mixPresets = {
-  none: {
-    blendMode: "source-over",
-    blendOpacity: 240,
-    baseOpacity: 245,
-    edgeSoftness: 22
-  },
-beton: {
-  blendMode: "multiply",
-  blendOpacity: 220,
-  baseOpacity: 240,
-  edgeSoftness: 24
-},
-chantier: {
-  blendMode: "overlay",
-  blendOpacity: 225,
-  baseOpacity: 242,
-  edgeSoftness: 22
-},
-  fracture: {
-    blendMode: "hard-light",
-    blendOpacity: 215,
-    baseOpacity: 235,
-    edgeSoftness: 24
-  }
-};
-
-const mainMode = getMainCollageMode(collageFilterModes);
-const preset = mixPresets[mainMode] || mixPresets.none;
-
-studioPhotos.push({
-  id: crypto.randomUUID(),
-  img: filteredImg,
-  originalImg: sourceImg,
-
-  arrId: targetArrId,
-  x: mx,
-  y: my,
-
-  scale: random(1.3, 1.8),
-  rot: random(-0.18, 0.18),
-
-  opacity: preset.baseOpacity,
-  blendMode: preset.blendMode,
-  blendOpacity: preset.blendOpacity,
-  edgeSoftness: preset.edgeSoftness,
-
-  glitch: random(2, 6),
-  filterMode: mainMode,
-filterModes: [...draggedFilterModesSnapshot],
-
-  dragging: false,
-  pinned: true
-});
-arrIdsWithPhotosDirty = true;
-markCollageDirty(targetArrId);
-  }
-
   // 7. Ajouter l'image, soit depuis l'image déjà chargée, soit via loadImage
-  if (draggedImageData) {
-    addPhotoToCollage(draggedImageData);
-  } else {
-    loadImage(draggedPhotoUrl, (imgLoaded) => {
-      addPhotoToCollage(imgLoaded);
-    });
-  }
+if (draggedImageData) {
+  addPhotoToCollage(draggedImageData);
+} else {
+  loadImage(releasedPhotoUrl, (imgLoaded) => {
+    addPhotoToCollage(imgLoaded);
+  });
+}
 
   // 8. Nettoyer l'état de drag
   draggedPhotoUrl = null;
   draggedPhotoArrId = null;
   draggedImageData = null;
   uiDragging = false;
-  draggedFilteredImageData = null;
+ 
 draggedFilterModesSnapshot = [];
+isDraggingPlacedPhoto = false;
 }
 class PhotoLayerItem {
   constructor(img, x, y) {
@@ -1363,14 +1347,10 @@ function drawOverlapTexture(pg, p, overlaps, alphaMin = 50, alphaMax = 90) {
 }
 
 function prepareArrondissementMasks() {
+  arrondissementMasks = {};
+
   for (let arr of data1) {
     const id = Number(arr.c_ar);
-
-    const mask = createGraphics(img.width, img.height);
-    mask.clear();
-    drawArrondissementMask(mask, id);
-
-    arrondissementMasks[id] = mask;
     arrondissementBounds[id] = getArrBounds(arr);
   }
 }
@@ -1400,6 +1380,22 @@ function getArrBounds(arr) {
 
 function markCollageDirty(arrId) {
   collageCacheDirty[Number(arrId)] = true;
+}
+
+function processCollageRebuildQueue() {
+  if (isDraggingPlacedPhoto) return;
+  if (isRebuildingCollage) return;
+  if (collageRebuildQueue.length === 0) return;
+
+  const arrId = collageRebuildQueue.shift();
+
+  isRebuildingCollage = true;
+
+  setTimeout(() => {
+    rebuildCollageCacheForArr(arrId);
+    collageCacheDirty[arrId] = false;
+    isRebuildingCollage = false;
+  }, 30);
 }
 
 function getNearbyPhotos(p, photoSize) {
@@ -1753,10 +1749,9 @@ function drawCollageForArr(arrId) {
 
   if (!collageCache[arrId]) {
     const b = arrondissementBounds[arrId];
-
     if (!b) return;
 
-    const margin = 340;
+    const margin = 260;
 
     const x = Math.max(0, Math.floor(b.minX - margin));
     const y = Math.max(0, Math.floor(b.minY - margin));
@@ -1781,7 +1776,9 @@ function drawCollageForArr(arrId) {
 
   const cache = collageCache[arrId];
 
-  image(cache.g, cache.x, cache.y);
+  if (cache) {
+    image(cache.g, cache.x, cache.y);
+  }
 }
 
 function rebuildCollageCacheForArr(arrId) {
@@ -1823,18 +1820,35 @@ function rebuildCollageCacheForArr(arrId) {
   target.drawingContext.save();
   target.drawingContext.globalCompositeOperation = "destination-in";
 
-  target.push();
-  target.translate(-cache.x, -cache.y);
-
-  if (arrondissementMasks[arrId]) {
-    target.image(arrondissementMasks[arrId], 0, 0);
-  } else {
-    drawArrondissementMask(target, arrId);
-  }
-
-  target.pop();
+drawArrondissementMaskLocal(target, arrId, cache.x, cache.y);
 
   target.drawingContext.restore();
+}
+
+function drawArrondissementMaskLocal(pg, idArr, offsetLocalX, offsetLocalY) {
+  let arr = data1.find(a => Number(a.c_ar) === Number(idArr));
+  if (!arr) return;
+
+  let geom = arr.geom.geometry;
+
+  pg.noStroke();
+  pg.fill(255);
+
+  let polys = geom.type === "Polygon"
+    ? [geom.coordinates[0]]
+    : geom.coordinates.map(p => p[0]);
+
+  for (let poly of polys) {
+    pg.beginShape();
+
+    for (let p of poly) {
+      let x = map(p[0], lonMin, lonMax, 0, img.width) - offsetLocalX;
+      let y = map(p[1], latMax, latMin, 0, img.height) - offsetLocalY;
+      pg.vertex(x, y);
+    }
+
+    pg.endShape(CLOSE);
+  }
 }
 function overlayPosterBlocks(ctx, canvas, params) {
   const intensity = params.intensity ?? 1;
