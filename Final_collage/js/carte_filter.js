@@ -34,6 +34,12 @@ let collageCacheDirty = {};
 let arrondissementMasks = {};
 let arrondissementBounds = {};
 
+let draggedFilteredImageData = null;
+let draggedFilterModesSnapshot = [];
+let filteredPhotoCache = new Map();
+let arrIdsWithPhotosCache = [];
+let arrIdsWithPhotosDirty = true;
+
 let timelineCursorEl;
 let timelineProgressEl;
 let labelStartEl;
@@ -133,6 +139,10 @@ function setup() {
   cnv.parent("canvas-container");
   window.addEventListener("DOMContentLoaded", () => {
   console.log("DOM READY");
+});
+
+window.addEventListener("pointerup", () => {
+  uiDragging = false;
 });
 
   console.log("backBtn:", document.getElementById("backBtn"));
@@ -566,6 +576,10 @@ function resetCollages() {
   studioPhotos = [];
   collageCache = {};
   collageCacheDirty = {};
+  arrIdsWithPhotosCache = [];
+  arrIdsWithPhotosDirty = true;
+  filteredPhotoCache.clear();
+
   console.log("Collages reset");
 }
 
@@ -810,16 +824,34 @@ imgEl.addEventListener("pointerdown", (e) => {
   draggedPhotoUrl = photo.url;
   draggedPhotoArrId = Number(arrId);
   draggedImageData = null;
+  draggedFilteredImageData = null;
+  draggedFilterModesSnapshot = [...collageFilterModes];
+
   uiDragging = true;
 
   loadImage(photo.url, (loadedImg) => {
     draggedImageData = loadedImg;
+
+    const cacheKey = photo.url + "|" + draggedFilterModesSnapshot.join("+");
+
+    if (filteredPhotoCache.has(cacheKey)) {
+      draggedFilteredImageData = filteredPhotoCache.get(cacheKey);
+      return;
+    }
+
+    // Le filtre est préparé pendant le drag, pas au drop
+    setTimeout(() => {
+      const filtered = createFilteredPhotoGraphic(
+        loadedImg,
+        draggedFilterModesSnapshot
+      );
+
+      filteredPhotoCache.set(cacheKey, filtered);
+      draggedFilteredImageData = filtered;
+    }, 0);
   });
 });
 
-window.addEventListener("pointerup", () => {
-  uiDragging = false;
-});
 });
 
   document.getElementById("photoPanel").style.display = "block";
@@ -944,10 +976,18 @@ if (movedArrId !== null) {
   // 6. Fonction commune pour ajouter la photo au collage
   function addPhotoToCollage(sourceImg) {
 
-  const filteredImg = createFilteredPhotoGraphic(
-  sourceImg,
-  collageFilterModes
-);
+  const cacheKey = draggedPhotoUrl + "|" + draggedFilterModesSnapshot.join("+");
+
+let filteredImg = draggedFilteredImageData || filteredPhotoCache.get(cacheKey);
+
+if (!filteredImg) {
+  filteredImg = createFilteredPhotoGraphic(
+    sourceImg,
+    draggedFilterModesSnapshot
+  );
+
+  filteredPhotoCache.set(cacheKey, filteredImg);
+}
 
    const mixPresets = {
   none: {
@@ -998,11 +1038,12 @@ studioPhotos.push({
 
   glitch: random(2, 6),
   filterMode: mainMode,
-filterModes: [...collageFilterModes],
+filterModes: [...draggedFilterModesSnapshot],
 
   dragging: false,
   pinned: true
 });
+arrIdsWithPhotosDirty = true;
 markCollageDirty(targetArrId);
   }
 
@@ -1020,6 +1061,8 @@ markCollageDirty(targetArrId);
   draggedPhotoArrId = null;
   draggedImageData = null;
   uiDragging = false;
+  draggedFilteredImageData = null;
+draggedFilterModesSnapshot = [];
 }
 class PhotoLayerItem {
   constructor(img, x, y) {
@@ -1515,6 +1558,10 @@ function softenPhotoEdges(ctx, canvas, params = {}) {
 }
 
 function getArrIdsWithPhotos() {
+  if (!arrIdsWithPhotosDirty) {
+    return arrIdsWithPhotosCache;
+  }
+
   const ids = new Set();
 
   for (let p of studioPhotos) {
@@ -1523,7 +1570,10 @@ function getArrIdsWithPhotos() {
     }
   }
 
-  return Array.from(ids);
+  arrIdsWithPhotosCache = Array.from(ids);
+  arrIdsWithPhotosDirty = false;
+
+  return arrIdsWithPhotosCache;
 }
 function erodeConcreteAlpha(ctx, canvas, strength = 1) {
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -1702,7 +1752,25 @@ function drawCollageForArr(arrId) {
   arrId = Number(arrId);
 
   if (!collageCache[arrId]) {
-    collageCache[arrId] = createGraphics(img.width, img.height);
+    const b = arrondissementBounds[arrId];
+
+    if (!b) return;
+
+    const margin = 340;
+
+    const x = Math.max(0, Math.floor(b.minX - margin));
+    const y = Math.max(0, Math.floor(b.minY - margin));
+    const w = Math.ceil((b.maxX - b.minX) + margin * 2);
+    const h = Math.ceil((b.maxY - b.minY) + margin * 2);
+
+    collageCache[arrId] = {
+      g: createGraphics(w, h),
+      x,
+      y,
+      w,
+      h
+    };
+
     collageCacheDirty[arrId] = true;
   }
 
@@ -1711,11 +1779,16 @@ function drawCollageForArr(arrId) {
     collageCacheDirty[arrId] = false;
   }
 
-  image(collageCache[arrId], 0, 0);
+  const cache = collageCache[arrId];
+
+  image(cache.g, cache.x, cache.y);
 }
 
 function rebuildCollageCacheForArr(arrId) {
-  const target = collageCache[arrId];
+  const cache = collageCache[arrId];
+  if (!cache) return;
+
+  const target = cache.g;
   target.clear();
 
   const photos = studioPhotos.filter(p => p.arrId === arrId);
@@ -1726,7 +1799,9 @@ function rebuildCollageCacheForArr(arrId) {
     target.push();
 
     target.imageMode(CENTER);
-    target.translate(p.x, p.y);
+
+    // On dessine dans un cache local, donc on retire l'offset du cache
+    target.translate(p.x - cache.x, p.y - cache.y);
     target.rotate(p.rot || 0);
 
     const photoSize = 260 * (p.scale || 1);
@@ -1734,7 +1809,6 @@ function rebuildCollageCacheForArr(arrId) {
 
     drawMixedPhoto(target, p, photoSize, touching);
 
-    // Bordure plus graphique, mais légère
     target.noTint();
     target.noFill();
     target.stroke(255, touching ? 45 : 130);
@@ -1745,14 +1819,20 @@ function rebuildCollageCacheForArr(arrId) {
     target.pop();
   }
 
+  // Masque arrondissement, mais dessiné avec le même décalage local
   target.drawingContext.save();
   target.drawingContext.globalCompositeOperation = "destination-in";
+
+  target.push();
+  target.translate(-cache.x, -cache.y);
 
   if (arrondissementMasks[arrId]) {
     target.image(arrondissementMasks[arrId], 0, 0);
   } else {
     drawArrondissementMask(target, arrId);
   }
+
+  target.pop();
 
   target.drawingContext.restore();
 }
