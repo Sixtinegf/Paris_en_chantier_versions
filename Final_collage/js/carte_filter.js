@@ -45,6 +45,13 @@ let isDraggingPlacedPhoto = false;
 let liveCollagePhotos = [];
 let collageRebuildDelayTimer = null;
 
+let arrondissementCenters = {};
+let isPanningMap = false;
+let panStillTimer = null;
+let lastTimelineT = null;
+let lastTimelineYear = null;
+let worksitesByArr = {};
+let allWorksitesPrepared = [];
 let timelineCursorEl;
 let timelineProgressEl;
 let labelStartEl;
@@ -209,6 +216,8 @@ labelMiddleEl = document.getElementById("labelMiddle");
     }
   });
 
+  prepareWorksitePoints();
+
   resetView();
 
   // =========================
@@ -313,13 +322,23 @@ function draw() {
   // TIMELINE UI SYNC (IMPORTANT)
   // =========================
 
-  if (timelineCursorEl) timelineCursorEl.style.left = (t * 100) + "%";
-if (timelineProgressEl) timelineProgressEl.style.width = (t * 100) + "%";
+  if (!isPanningMap) {
+  const roundedT = Math.round(t * 1000) / 1000;
+  const year = formatYear(currentTime);
 
-if (labelStartEl) labelStartEl.innerText = formatYear(minTime);
-if (labelEndEl) labelEndEl.innerText = formatYear(maxTime);
-if (labelMiddleEl) labelMiddleEl.innerText = formatYear(currentTime);
-  
+  if (roundedT !== lastTimelineT) {
+    if (timelineCursorEl) timelineCursorEl.style.left = (t * 100) + "%";
+    if (timelineProgressEl) timelineProgressEl.style.width = (t * 100) + "%";
+    lastTimelineT = roundedT;
+  }
+
+  if (year !== lastTimelineYear) {
+    if (labelStartEl) labelStartEl.innerText = formatYear(minTime);
+    if (labelEndEl) labelEndEl.innerText = formatYear(maxTime);
+    if (labelMiddleEl) labelMiddleEl.innerText = year;
+    lastTimelineYear = year;
+  }
+}
   // =========================
   // CAMERA LIMITS
   // =========================
@@ -346,7 +365,7 @@ let my = (mouseY - offsetY) / scaleFactor;
 // =========================
 let activeArr = null;
 
-if (!collageMapMode) {
+if (!collageMapMode && selectedArr === null) {
   for (let arr of data1) {
     if (pointInArrondissement(mx, my, arr)) {
       activeArr = arr;
@@ -369,12 +388,12 @@ let idArr = selectedArr !== null
 // OVERLAYS ARRONDISSEMENTS
 // =========================
 
-// =========================
-// OVERLAYS ARRONDISSEMENTS
-// =========================
-
-if (!collageMapMode && idArr !== null) {
-  drawOneOverlay(idArr);
+if (!collageMapMode) {
+  if (selectedArr !== null) {
+    drawOneOverlay(selectedArr);
+  } else if (idArr !== null) {
+    drawOneOverlay(idArr);
+  }
 }
 
 // =========================
@@ -388,124 +407,90 @@ if (!photosLoading) {
     for (let arrId of arrIdsWithPhotos) {
       drawCollageForArr(arrId);
     }
+  } else if (selectedArr !== null) {
+    drawCollageForArr(selectedArr);
   } else if (idArr !== null) {
     drawCollageForArr(idArr);
   }
 }
 
-  // =========================
-  // POINTS
-  // =========================
-  if (!collageMapMode) {
-  for (let i = 0; i < data.length; i++) {
-    let d = data[i];
+// =========================
+// POINTS
+// =========================
 
-   if (!d.geo_point_2d || !d.startTime) continue;
+if (!collageMapMode) {
+  const pointsToDraw = selectedArr !== null
+    ? (worksitesByArr[selectedArr] || [])
+    : allWorksitesPrepared;
+
+  for (let i = 0; i < pointsToDraw.length; i++) {
+    let d = pointsToDraw[i];
+
+    if (!d.startTime) continue;
 
     // =========================
     // TIME FILTER
     // =========================
+
     let buffer = 1000 * 60 * 60 * 24 * 3;
 
     let start = d.startTime;
-let end = d.endTime || d.startTime + 1000 * 60 * 60 * 24 * 30; // 30 jours par défaut
+    let end = d.endTime || d.startTime + 1000 * 60 * 60 * 24 * 30;
 
-if (currentTime < start - buffer || currentTime > end + buffer) continue;
-
-    // =========================
-    // POSITION
-    // =========================
-    let x = map(d.geo_point_2d.lon, lonMin, lonMax, 0, img.width);
-    let y = map(d.geo_point_2d.lat, latMax, latMin, 0, img.height);
-
-    let n = noise(i * 0.1, frameCount * 0.01);
-    let ox = map(n, 0, 1, -3, 3);
-    let oy = map(n, 0, 1, -3, 3);
+    if (currentTime < start - buffer || currentTime > end + buffer) continue;
 
     // =========================
-    // FILTER ARRONDISSEMENT
+    // POSITION PRÉ-CALCULÉE
     // =========================
-    if (selectedArr !== null) {
-      let arrId = getArrFromPoint(x, y);
-      if (arrId !== selectedArr) continue;
-    }
 
-    // =========================
-    // SIZE
-    // =========================
-    let size = 20;
+    let x = d.mapX;
+    let y = d.mapY;
 
-    if (selectedArr !== null) {
-      let s = getSurfaceValue(d);
-
-      let norm = map(
-        log(s + 1),
-        log(minSurface + 1),
-        log(maxSurface + 1),
-        0,
-        1
-      );
-
-      norm = constrain(norm, 0, 1);
-      norm = pow(norm, 1.6);
-
-      size = map(norm, 0, 1, 6, 90);
-    }
+    if (x === undefined || y === undefined) continue;
 
     // =========================
-    // CATEGORY
+    // SIZE PRÉ-CALCULÉE
     // =========================
-    let r = (
-      d.moa_principal ||
-      d.responsable ||
-      d.maitre_d_ouvrage ||
-      ""
-    ).toLowerCase();
 
-    let category = "Tiers";
+    let size = selectedArr !== null ? d.focusSize : 20;
 
-    if (
-      r.includes("ville de paris") ||
-      r.includes("dvd") ||
-      r.includes("dpe") ||
-      r.includes("deve")
-    ) {
-      category = "Ville de Paris";
-    } else if (
-      r.includes("enedis") ||
-      r.includes("grdf") ||
-      r.includes("orange") ||
-      r.includes("ratp") ||
-      r.includes("sncf")
-    ) {
-      category = "Réseaux";
-    }
+    // =========================
+    // CATEGORY PRÉ-CALCULÉE
+    // =========================
 
+    let category = d.category || "Tiers";
     let isActive = filters[category];
     let imgToUse = isActive ? iconRed : icon;
 
-// cacher les pictos pendant les animations
+    // =========================
+    // PETIT MOUVEMENT DES POINTS
+    // désactivé pendant le déplacement de la carte
+    // =========================
 
-let hidePoints = false;
+    let ox = 0;
+    let oy = 0;
 
+    if (!isPanningMap) {
+      let n = noise(i * 0.1, frameCount * 0.01);
+      ox = map(n, 0, 1, -3, 3);
+      oy = map(n, 0, 1, -3, 3);
+    }
 
-   // =========================
-// DRAW POINT
-// =========================
+    // =========================
+    // DRAW POINT
+    // =========================
 
-if (!hidePoints) {
+    imageMode(CENTER);
 
-  imageMode(CENTER);
-
-  image(
-    imgToUse,
-    x + ox,
-    y + oy,
-    size,
-    size
-  );
-}
+    image(
+      imgToUse,
+      x + ox,
+      y + oy,
+      size,
+      size
+    );
   }
+
 
    }
 
@@ -520,13 +505,7 @@ if (draggedImageData) {
   noTint();
   pop();
 }
-  fill(0);
-  noStroke();
-  textSize(14);
 
-  let debugDate = new Date(currentTime);
-  text(debugDate.toLocaleDateString(), 20, height - 20);
-  //processCollageRebuildQueue();
 }
 
 // ===== INTERACTIONS =====
@@ -577,8 +556,16 @@ function mouseDragged() {
     }
   }
 
-  offsetX += movedX;
-  offsetY += movedY;
+offsetX += movedX;
+offsetY += movedY;
+
+isPanningMap = true;
+
+if (panStillTimer) clearTimeout(panStillTimer);
+
+panStillTimer = setTimeout(() => {
+  isPanningMap = false;
+}, 120);
 }
 function resetCollages() {
   studioPhotos = [];
@@ -660,7 +647,79 @@ function doubleClicked() {
   }
 }
 
+function prepareWorksitePoints() {
+  worksitesByArr = {};
+  allWorksitesPrepared = [];
 
+  for (let d of data) {
+    if (!d.geo_point_2d) continue;
+
+    d.mapX = map(d.geo_point_2d.lon, lonMin, lonMax, 0, img.width);
+    d.mapY = map(d.geo_point_2d.lat, latMax, latMin, 0, img.height);
+
+    d.arrId = getArrFromPoint(d.mapX, d.mapY);
+
+    const r = (
+      d.moa_principal ||
+      d.responsable ||
+      d.maitre_d_ouvrage ||
+      ""
+    ).toLowerCase();
+
+    if (
+      r.includes("ville de paris") ||
+      r.includes("dvd") ||
+      r.includes("dpe") ||
+      r.includes("deve")
+    ) {
+      d.category = "Ville de Paris";
+    } else if (
+      r.includes("enedis") ||
+      r.includes("grdf") ||
+      r.includes("orange") ||
+      r.includes("ratp") ||
+      r.includes("sncf")
+    ) {
+      d.category = "Réseaux";
+    } else {
+      d.category = "Tiers";
+    }
+
+    let s = getSurfaceValue(d);
+
+    if (
+      selectedArr !== null ||
+      isFinite(minSurface) &&
+      isFinite(maxSurface) &&
+      minSurface !== maxSurface
+    ) {
+      let norm = map(
+        log(s + 1),
+        log(minSurface + 1),
+        log(maxSurface + 1),
+        0,
+        1
+      );
+
+      norm = constrain(norm, 0, 1);
+      norm = pow(norm, 1.6);
+
+      d.focusSize = map(norm, 0, 1, 6, 90);
+    } else {
+      d.focusSize = 20;
+    }
+
+    allWorksitesPrepared.push(d);
+
+    if (d.arrId !== null && d.arrId !== undefined) {
+      if (!worksitesByArr[d.arrId]) {
+        worksitesByArr[d.arrId] = [];
+      }
+
+      worksitesByArr[d.arrId].push(d);
+    }
+  }
+}
 function keyPressed() {
   // ESC désactivé volontairement pour debug
 }
@@ -1398,6 +1457,7 @@ function prepareArrondissementMasks() {
   for (let arr of data1) {
     const id = Number(arr.c_ar);
     arrondissementBounds[id] = getArrBounds(arr);
+    arrondissementCenters[id] = getArrCenter(arr);
   }
 }
 
@@ -2875,11 +2935,9 @@ function drawOneOverlay(arrId) {
   if (!overlays[arrId]) return;
 
   const o = overlays[arrId];
+  const c = arrondissementCenters[Number(arrId)];
 
-  const arr = data1.find(a => Number(a.c_ar) === Number(arrId));
-  if (!arr) return;
-
-  const c = getArrCenter(arr);
+  if (!c) return;
 
   push();
 
