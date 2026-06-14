@@ -48,8 +48,7 @@ let collageRebuildDelayTimer = null;
 let arrondissementCenters = {};
 let isPanningMap = false;
 let panStillTimer = null;
-let lastTimelineT = null;
-let lastTimelineYear = null;
+
 let worksitesByArr = {};
 let allWorksitesPrepared = [];
 let timelineCursorEl;
@@ -322,23 +321,11 @@ function draw() {
   // TIMELINE UI SYNC (IMPORTANT)
   // =========================
 
-  if (!isPanningMap) {
-  const roundedT = Math.round(t * 1000) / 1000;
-  const year = formatYear(currentTime);
-
-  if (roundedT !== lastTimelineT) {
-    if (timelineCursorEl) timelineCursorEl.style.left = (t * 100) + "%";
-    if (timelineProgressEl) timelineProgressEl.style.width = (t * 100) + "%";
-    lastTimelineT = roundedT;
-  }
-
-  if (year !== lastTimelineYear) {
-    if (labelStartEl) labelStartEl.innerText = formatYear(minTime);
-    if (labelEndEl) labelEndEl.innerText = formatYear(maxTime);
-    if (labelMiddleEl) labelMiddleEl.innerText = year;
-    lastTimelineYear = year;
-  }
-}
+timelineCursorEl.style.left = (t * 100) + "%";
+timelineProgressEl.style.width = (t * 100) + "%";
+labelStartEl.innerText = formatYear(minTime);
+labelEndEl.innerText = formatYear(maxTime);
+labelMiddleEl.innerText = formatYear(currentTime);
   // =========================
   // CAMERA LIMITS
   // =========================
