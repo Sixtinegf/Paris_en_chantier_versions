@@ -439,7 +439,7 @@ if (!collageMapMode) {
     // SIZE PRÉ-CALCULÉE
     // =========================
 
-    let size = selectedArr !== null ? d.focusSize : 35;
+    let size = selectedArr !== null ? d.focusSize : 50;
 
     // =========================
     // CATEGORY PRÉ-CALCULÉE
