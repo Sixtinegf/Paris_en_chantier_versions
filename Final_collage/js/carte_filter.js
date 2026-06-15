@@ -732,7 +732,7 @@ function resetMap() {
 }
 function focus(arr) {
   let c = getArrCenter(arr);
-  scaleFactor = 1;
+  scaleFactor = 1.5;
   offsetX = width / 2 - c.x * scaleFactor;
   offsetY = height / 2 - c.y * scaleFactor;
 }
