@@ -439,7 +439,7 @@ if (!collageMapMode) {
     // SIZE PRÉ-CALCULÉE
     // =========================
 
-    let size = selectedArr !== null ? d.focusSize : 20;
+    let size = selectedArr !== null ? d.focusSize : 30;
 
     // =========================
     // CATEGORY PRÉ-CALCULÉE
@@ -732,7 +732,7 @@ function resetMap() {
 }
 function focus(arr) {
   let c = getArrCenter(arr);
-  scaleFactor = 0.7;
+  scaleFactor = 1;
   offsetX = width / 2 - c.x * scaleFactor;
   offsetY = height / 2 - c.y * scaleFactor;
 }
